@@ -1,0 +1,80 @@
+services:
+  # ── MongoDB Database Service ──────────────────────────────────────────
+  mongodb:
+    image: mongo:7.0
+    container_name: prepiq-mongodb
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - prepiq_mongodb_data:/data/db
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh --eval 'db.adminCommand(\"ping\")' || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  # ── Redis Cache Service ───────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: prepiq-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - prepiq_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+  # ── Backend Node.js / Express API Service ─────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: prepiq-backend
+    restart: always
+    ports:
+      - "5000:5000"
+    environment:
+      - PORT=5000
+      - NODE_ENV=production
+      - MONGO_URI=mongodb://mongodb:27017/prepiq_db
+      - REDIS_ENABLED=true
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - CLIENT_URL=http://localhost:5173
+      - JWT_SECRET=${JWT_SECRET:-prepiq_ai_jwt_secret_key_32chars_long_docker}
+      - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET:-prepiq_ai_jwt_refresh_secret_key_32chars_docker}
+      - GROQ_API_KEY=${GROQ_API_KEY:-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}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - CLOUDINARY_CLOUD_NAME=${CLOUDINARY_CLOUD_NAME:-}
+      - CLOUDINARY_API_KEY=${CLOUDINARY_API_KEY:-}
+      - CLOUDINARY_API_SECRET=${CLOUDINARY_API_SECRET:-}
+      - ADZUNA_APP_ID=${ADZUNA_APP_ID:-fea744cc}
+      - ADZUNA_APP_KEY=${ADZUNA_APP_KEY:-d5d3c2f00610166958480fc7e8e024c4}
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # ── Frontend React + Nginx Service ────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: prepiq-frontend
+    restart: always
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+
+volumes:
+  prepiq_mongodb_data:
+  prepiq_redis_data:

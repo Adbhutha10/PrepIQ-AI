@@ -41,7 +41,7 @@ const seedMockLogs = async () => {
       status: 'success',
       userId: triggerUser,
       details: 'Admin settings updated: JWT expiry changed to 7d, AI models adjusted.',
-      metadata: { updatedFields: ['general.jwtExpiry', 'ai.model'], updatedBy: 'aftab@admin.com' },
+      metadata: { updatedFields: ['general.jwtExpiry', 'ai.model'], updatedBy: 'admin@interview.com' },
     },
     {
       category: 'ai',

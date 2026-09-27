@@ -12,7 +12,7 @@ const User          = require('../models/User.model');
 const adzunaService = require('../services/adzuna.service');
 const AppError      = require('../utils/AppError');
 
-const ADMIN_EMAIL = 'aftab@admin.com';
+const ADMIN_EMAIL = 'admin@interview.com';
 
 // In-memory reference to the running scheduler interval
 let schedulerIntervalId = null;

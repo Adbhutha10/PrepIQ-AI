@@ -25,8 +25,8 @@ export default function RegisterPage() {
 
   return (
     <div>
-      <h2 className="text-3xl font-display font-bold text-white mb-2">Create account</h2>
-      <p className="text-slate-400 mb-8">Start practicing with AI-powered interviews</p>
+      <h2 className="text-3xl font-display font-bold text-slate-900 mb-2">Create account</h2>
+      <p className="text-slate-500 mb-8">Start practicing with AI-powered interviews</p>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div>
@@ -81,7 +81,7 @@ export default function RegisterPage() {
               })}
             />
             <button type="button" onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300">
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700">
               {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>
           </div>
@@ -111,9 +111,9 @@ export default function RegisterPage() {
         </button>
       </form>
 
-      <p className="mt-6 text-center text-sm text-slate-400">
+      <p className="mt-6 text-center text-sm text-slate-500">
         Already have an account?{' '}
-        <Link to="/login" className="text-brand-400 hover:text-brand-300 font-medium">
+        <Link to="/login" className="text-indigo-500 hover:text-indigo-600 font-medium">
           Sign in
         </Link>
       </p>

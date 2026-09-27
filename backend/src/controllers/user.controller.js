@@ -60,6 +60,11 @@ exports.getDashboard = async (req, res) => {
     { $group: { _id: null, avgScore: { $avg: '$overallScore' }, maxScore: { $max: '$overallScore' } } },
   ]);
 
+  const historicalSessions = await Session.find({ userId, status: 'completed', overallScore: { $ne: null } })
+    .sort('createdAt')
+    .limit(10)
+    .select('overallScore createdAt');
+
   res.status(200).json({
     success: true,
     data: {
@@ -68,6 +73,7 @@ exports.getDashboard = async (req, res) => {
       averageScore: scoreAgg[0]?.avgScore?.toFixed(1) ?? 0,
       bestScore: scoreAgg[0]?.maxScore ?? 0,
       recentSessions,
+      historicalSessions,
     },
   });
 };

@@ -96,6 +96,10 @@ exports.completeSession = async (req, res, next) => {
   const evaluationPromises = session.answers.map(async (answer) => {
     if (answer.skipped || !answer.answerText) {
       answer.aiScore = 0;
+      answer.technicalScore = 0;
+      answer.relevanceScore = 0;
+      answer.communicationScore = 0;
+      answer.confidenceScore = 0;
       answer.aiFeedback = 'Question was skipped.';
       return;
     }
@@ -106,10 +110,20 @@ exports.completeSession = async (req, res, next) => {
         expectedKeywords: interview.questions.id(answer.questionId)?.expectedKeywords || [],
         jobTitle: interview.jobTitle,
       });
-      answer.aiScore = result.score ?? 0;
+      answer.technicalScore = result.technicalScore ?? 0;
+      answer.relevanceScore = result.relevanceScore ?? 0;
+      answer.communicationScore = result.communicationScore ?? 0;
+      answer.confidenceScore = result.confidenceScore ?? 0;
+      
+      // Calculate a combined score for legacy support or easy sorting
+      answer.aiScore = Math.round((answer.technicalScore + answer.relevanceScore + answer.communicationScore + answer.confidenceScore) / 40);
       answer.aiFeedback = result.feedback ?? '';
     } catch {
       answer.aiScore = 0;
+      answer.technicalScore = 0;
+      answer.relevanceScore = 0;
+      answer.communicationScore = 0;
+      answer.confidenceScore = 0;
       answer.aiFeedback = 'Evaluation unavailable.';
     }
   });
@@ -128,11 +142,13 @@ exports.completeSession = async (req, res, next) => {
   }
 
   // ── Finalize session ──────────────────────────────────────────
-  const overallScore = overallData.overallScore ?? session.calculateOverallScore();
-  session.overallScore = overallScore;
+  session.interviewPerformanceScore = overallData.interviewPerformanceScore ?? session.calculateOverallScore();
+  session.careerReadinessScore = overallData.careerReadinessScore ?? session.calculateOverallScore();
+  
   session.overallFeedback = overallData.improvementTips?.join(' ') ?? '';
   session.strengths = overallData.strengths ?? [];
-  session.areasForImprovement = overallData.weaknesses ?? [];
+  session.weaknesses = overallData.weaknesses ?? [];
+  session.skillGaps = overallData.skillGaps ?? [];
   session.recommendedResources = overallData.improvementTips ?? [];
   session.status = 'completed';
   session.completedAt = new Date();

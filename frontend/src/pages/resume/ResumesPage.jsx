@@ -19,7 +19,7 @@ const PARSE_STATUS = {
 function Chip({ label }) {
   return (
     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-      bg-brand-600/20 text-brand-300 border border-brand-500/30">
+      bg-indigo-100 text-indigo-600 border border-brand-500/30">
       {label}
     </span>
   );
@@ -58,12 +58,12 @@ function ParsedDataPanel({ resume, onReparse }) {
 
   if (!d) {
     return (
-      <div className="mt-4 pt-4 border-t border-surface-border">
+      <div className="mt-4 pt-4 border-t border-slate-200">
         <p className="text-xs text-slate-500 text-center">
           Structured data not available.{' '}
           <button
             onClick={() => setShowModal(true)}
-            className="text-brand-400 hover:underline"
+            className="text-indigo-500 hover:underline"
           >
             Parse now →
           </button>
@@ -82,18 +82,18 @@ function ParsedDataPanel({ resume, onReparse }) {
   }
 
   return (
-    <div className="mt-4 pt-4 border-t border-surface-border space-y-4">
+    <div className="mt-4 pt-4 border-t border-slate-200 space-y-4">
 
       {/* Candidate name */}
       {d.name && (
-        <p className="text-sm font-semibold text-white">
+        <p className="text-sm font-semibold text-slate-900">
           👤 {d.name}
         </p>
       )}
 
       {/* Skills */}
       {Array.isArray(d.skills) && d.skills.length > 0 && (
-        <ParsedSection icon={Cpu} title="Skills" color="text-brand-400">
+        <ParsedSection icon={Cpu} title="Skills" color="text-indigo-500">
           <div className="flex flex-wrap gap-1.5">
             {d.skills.map((s, i) => <Chip key={i} label={s} />)}
           </div>
@@ -105,8 +105,8 @@ function ParsedDataPanel({ resume, onReparse }) {
         <ParsedSection icon={Briefcase} title="Experience" color="text-violet-400">
           <div className="space-y-2">
             {d.experience.map((exp, i) => (
-              <div key={i} className="p-3 rounded-xl bg-surface-border/30 border border-surface-border text-xs">
-                <p className="font-semibold text-white">{exp.role} {exp.company && <span className="text-slate-400">@ {exp.company}</span>}</p>
+              <div key={i} className="p-3 rounded-xl bg-surface-border/30 border border-slate-200 text-xs">
+                <p className="font-semibold text-slate-900">{exp.role} {exp.company && <span className="text-slate-500">@ {exp.company}</span>}</p>
                 {exp.duration && <p className="text-slate-500 mt-0.5">{exp.duration}</p>}
                 {Array.isArray(exp.tech) && exp.tech.length > 0 && (
                   <div className="flex flex-wrap gap-1 mt-1.5">
@@ -124,9 +124,9 @@ function ParsedDataPanel({ resume, onReparse }) {
         <ParsedSection icon={Code2} title="Projects" color="text-emerald-400">
           <div className="space-y-2">
             {d.projects.map((proj, i) => (
-              <div key={i} className="p-3 rounded-xl bg-surface-border/30 border border-surface-border text-xs">
-                <p className="font-semibold text-white">{proj.title}</p>
-                {proj.description && <p className="text-slate-400 mt-0.5 leading-relaxed">{proj.description}</p>}
+              <div key={i} className="p-3 rounded-xl bg-surface-border/30 border border-slate-200 text-xs">
+                <p className="font-semibold text-slate-900">{proj.title}</p>
+                {proj.description && <p className="text-slate-500 mt-0.5 leading-relaxed">{proj.description}</p>}
                 {Array.isArray(proj['tech stack']) && proj['tech stack'].length > 0 && (
                   <div className="flex flex-wrap gap-1 mt-1.5">
                     {proj['tech stack'].map((t, j) => <Chip key={j} label={t} />)}
@@ -141,7 +141,7 @@ function ParsedDataPanel({ resume, onReparse }) {
       {/* Education */}
       {d.education && (
         <ParsedSection icon={GraduationCap} title="Education" color="text-amber-400">
-          <p className="text-xs text-slate-300">
+          <p className="text-xs text-slate-700">
             {typeof d.education === 'string'
               ? d.education
               : JSON.stringify(d.education)}
@@ -152,7 +152,7 @@ function ParsedDataPanel({ resume, onReparse }) {
       {/* JD fields — shown when parsed with a JD */}
       {d.role && (
         <ParsedSection icon={Briefcase} title="JD Role" color="text-rose-400">
-          <p className="text-xs text-slate-300">{d.role}</p>
+          <p className="text-xs text-slate-700">{d.role}</p>
         </ParsedSection>
       )}
       {Array.isArray(d.required_skills) && d.required_skills.length > 0 && (
@@ -166,7 +166,7 @@ function ParsedDataPanel({ resume, onReparse }) {
       {/* Re-parse button */}
       <button
         onClick={() => setShowModal(true)}
-        className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-brand-400 transition-colors"
+        className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-indigo-500 transition-colors"
       >
         <RefreshCw className="w-3 h-3" /> Re-parse with Job Description
       </button>
@@ -194,11 +194,11 @@ function ReparseModal({ jdInput, setJdInput, parsing, onConfirm, onClose }) {
         className="card w-full max-w-lg p-6 space-y-4"
       >
         <div className="flex items-center justify-between">
-          <h3 className="font-display font-bold text-white text-lg">Re-parse Resume</h3>
+          <h3 className="font-display font-bold text-slate-900 text-lg">Re-parse Resume</h3>
           <button onClick={onClose} className="btn-ghost p-1.5"><X className="w-4 h-4" /></button>
         </div>
 
-        <p className="text-slate-400 text-sm">
+        <p className="text-slate-500 text-sm">
           Optionally paste a job description to get richer JD-matched parsing
           (required skills, responsibilities, preferred skills).
         </p>
@@ -313,31 +313,31 @@ export default function ResumesPage() {
   return (
     <div className="max-w-2xl mx-auto space-y-6 animate-fade-in">
       <div>
-        <h2 className="text-2xl font-display font-bold text-white">My Resumes</h2>
-        <p className="text-slate-400 mt-1">Upload your resume so AI can personalise your interview questions.</p>
+        <h2 className="text-2xl font-display font-bold text-slate-900">My Resumes</h2>
+        <p className="text-slate-500 mt-1">Upload your resume so AI can personalise your interview questions.</p>
       </div>
 
       {/* Dropzone */}
       <div
         {...getRootProps()}
         className={`border-2 border-dashed rounded-2xl p-10 text-center cursor-pointer transition-all duration-200
-          ${isDragActive ? 'border-brand-500 bg-brand-600/10' : 'border-surface-border hover:border-brand-500/60 hover:bg-surface-hover'}
+          ${isDragActive ? 'border-brand-500 bg-brand-600/10' : 'border-slate-200 hover:border-brand-500/60 hover:bg-slate-100'}
           ${uploading ? 'opacity-60 cursor-not-allowed' : ''}`}
       >
         <input {...getInputProps()} />
         <div className="flex flex-col items-center gap-3">
           {uploading ? (
-            <Loader2 className="w-10 h-10 text-brand-400 animate-spin" />
+            <Loader2 className="w-10 h-10 text-indigo-500 animate-spin" />
           ) : (
             <div className={`p-4 rounded-2xl ${isDragActive ? 'bg-brand-600/30' : 'bg-surface-border/50'} transition-colors`}>
-              <Upload className={`w-8 h-8 ${isDragActive ? 'text-brand-400' : 'text-slate-500'}`} />
+              <Upload className={`w-8 h-8 ${isDragActive ? 'text-indigo-500' : 'text-slate-500'}`} />
             </div>
           )}
           <div>
-            <p className="font-semibold text-white">
+            <p className="font-semibold text-slate-900">
               {uploading ? 'Uploading & analysing…' : isDragActive ? 'Drop your resume here' : 'Drag & drop your resume'}
             </p>
-            <p className="text-slate-500 text-sm mt-1">or <span className="text-brand-400">click to browse</span></p>
+            <p className="text-slate-500 text-sm mt-1">or <span className="text-indigo-500">click to browse</span></p>
           </div>
           <p className="text-xs text-slate-600">PDF, DOC, DOCX • Max 5MB</p>
         </div>
@@ -360,7 +360,7 @@ export default function ResumesPage() {
         </div>
       ) : (
         <div className="space-y-3">
-          <p className="text-slate-400 text-sm">{resumes.length} resume{resumes.length !== 1 ? 's' : ''}</p>
+          <p className="text-slate-500 text-sm">{resumes.length} resume{resumes.length !== 1 ? 's' : ''}</p>
           <AnimatePresence>
             {resumes.map((resume) => {
               const ps    = PARSE_STATUS[resume.parseStatus] || PARSE_STATUS.pending;
@@ -378,12 +378,12 @@ export default function ResumesPage() {
                   {/* Header row */}
                   <div className="flex items-center justify-between gap-4">
                     <div className="flex items-start gap-4 min-w-0">
-                      <div className={`p-2.5 rounded-xl flex-shrink-0 ${resume.isDefault ? 'bg-amber-600/20' : 'bg-brand-600/20'}`}>
-                        <FileText className={`w-5 h-5 ${resume.isDefault ? 'text-amber-400' : 'text-brand-400'}`} />
+                      <div className={`p-2.5 rounded-xl flex-shrink-0 ${resume.isDefault ? 'bg-amber-600/20' : 'bg-indigo-100'}`}>
+                        <FileText className={`w-5 h-5 ${resume.isDefault ? 'text-amber-400' : 'text-indigo-500'}`} />
                       </div>
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-2 mb-1">
-                          <p className="font-medium text-white text-sm truncate">{resume.originalName}</p>
+                          <p className="font-medium text-slate-900 text-sm truncate">{resume.originalName}</p>
                           {resume.isDefault && (
                             <span className="badge bg-amber-600/20 text-amber-300 border-amber-500/30">
                               <Star className="w-3 h-3" /> Default
@@ -415,7 +415,7 @@ export default function ResumesPage() {
                       {resume.parseStatus === 'parsed' && (
                         <button
                           onClick={() => setExpanded(isOpen ? null : resume._id)}
-                          className="btn-ghost p-2 text-brand-400"
+                          className="btn-ghost p-2 text-indigo-500"
                           title={isOpen ? 'Collapse' : 'View parsed data'}
                         >
                           {isOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}

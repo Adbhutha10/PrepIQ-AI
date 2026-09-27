@@ -1,6 +1,6 @@
 # AI Interview Backend Architecture
 
-This document provides a comprehensive overview of the backend folder structure, file responsibilities, and the core design patterns used in the AI Interviewer application.
+This document provides a comprehensive overview of the backend folder structure, file responsibilities, and the core design patterns used in the PrepIQ AI application.
 
 ---
 
@@ -11,6 +11,8 @@ This document provides a comprehensive overview of the backend folder structure,
 | `src/` | Main source code directory. |
 | `uploads/` | Temporary storage for local PDF uploads (cleared after process). |
 | `.env` | Environment variables (API Keys, DB URI, Secret Keys). |
+| `Dockerfile` | Container configuration for building the backend Docker image. |
+| `.dockerignore` | Defines files/folders excluded from Docker build context. |
 | `package.json` | Project dependencies and scripts. |
 
 ---

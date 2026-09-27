@@ -22,7 +22,7 @@ import {
 } from '@/services/admin.service';
 import toast from 'react-hot-toast';
 
-const ADMIN_EMAIL = 'aftab@admin.com';
+const ADMIN_EMAIL = 'admin@interview.com';
 
 // ─── Status Badge rendering ───────────────────────────────────────
 function StatusBadge({ isActive, isBanned }) {

@@ -1,7 +1,7 @@
 {
-  "name": "ai-interview-backend",
+  "name": "prepiq-backend",
   "version": "1.2.0",
-  "description": "AI Interview App Backend - Node.js + Express + MongoDB",
+  "description": "PrepIQ AI Backend - Node.js + Express + MongoDB",
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",

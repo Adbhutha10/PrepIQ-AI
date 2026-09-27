@@ -3,7 +3,7 @@ const User = require('../models/User.model');
 const AppError = require('../utils/AppError');
 const { sendTokenResponse } = require('../utils/jwt.utils');
 
-const ADMIN_EMAIL = 'aftab@admin.com';
+const ADMIN_EMAIL = 'admin@interview.com';
 
 // ─── POST /api/auth/register ───────────────────────────────────────
 exports.register = async (req, res, next) => {

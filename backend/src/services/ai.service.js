@@ -19,7 +19,7 @@ const formatPrompt = (template, vars) => {
 };
 
 /**
- * Generate interview questions using Groq LLM (llama-3.3-70b-versatile)
+ * Generate interview questions using Groq LLM (openai/gpt-oss-120b)
  * @param {Object} params
  * @param {string} params.jobTitle
  * @param {string} params.jobDescription
@@ -35,12 +35,32 @@ const generateInterviewQuestions = async ({
   experienceLevel,
   numberOfQuestions = 10,
   resumeText = null,
+  questionTypes = ['technical', 'behavioral'],
 }) => {
   const optimizedContext = await extractContextViaRAG(resumeText, jobDescription);
 
-  // Distribute questions: ~2/3 technical, ~1/3 behavioral (min 1 each)
-  const technicalCount = Math.max(1, Math.round((numberOfQuestions * 2) / 3));
-  const behavioralCount = Math.max(1, numberOfQuestions - technicalCount);
+  // Distribute questions based on selected questionTypes
+  const validTypes = Array.isArray(questionTypes) && questionTypes.length > 0 
+    ? questionTypes 
+    : ['technical', 'behavioral'];
+    
+  let technicalCount = 0;
+  let behavioralCount = 0;
+
+  // Simple split based on what's available
+  const hasTechnical = validTypes.includes('technical');
+  const hasBehavioral = validTypes.some(t => t !== 'technical'); // HR, Situational, etc., map to behavioral in our prompt for now
+
+  if (hasTechnical && hasBehavioral) {
+    technicalCount = Math.max(1, Math.round((numberOfQuestions * 2) / 3));
+    behavioralCount = Math.max(1, numberOfQuestions - technicalCount);
+  } else if (hasTechnical && !hasBehavioral) {
+    technicalCount = numberOfQuestions;
+    behavioralCount = 0;
+  } else {
+    technicalCount = 0;
+    behavioralCount = numberOfQuestions;
+  }
 
   const systemPrompt = `You are an expert technical interviewer and HR specialist.
 You create precise, challenging, and role-relevant interview questions solely based on the provided context retrieved from RAG chunks.
@@ -89,7 +109,7 @@ Return structured JSON exactly in this format:
 }`;
 
   const response = await groq.chat.completions.create({
-    model: 'llama-3.3-70b-versatile',
+    model: 'openai/gpt-oss-120b',
     messages: [
       { role: 'system', content: systemPrompt },
       { role: 'user', content: userPrompt },
@@ -145,23 +165,32 @@ Return structured JSON exactly in this format:
 /**
  * Evaluate a candidate's answer using Groq
  */
-const evaluateAnswer = async ({ questionText, answerText, expectedKeywords, jobTitle }) => {
+const evaluateAnswer = async ({ questionText, answerText, expectedKeywords, jobTitle, timeTaken = 0 }) => {
+  const timePenaltyInstruction = timeTaken >= 120 
+    ? "IMPORTANT: The candidate took too long to answer (>= 120 seconds). Severely penalize their communication and confidence scores for rambling or poor time management."
+    : "The candidate answered within a reasonable timeframe.";
+
   const defaultPrompt = `Act as an interviewer evaluating a candidate's response.
 
 Job Title: \${jobTitle}
 Question: \${questionText}
 Expected Keywords Context: \${expectedKeywordsText}
 Candidate's Answer: \${answerText}
+Time Status: \${timePenaltyInstruction}
 
-Evaluate the candidate's answer strictly based on:
-1. Correctness
-2. Clarity
-3. Depth
+Evaluate the candidate's answer based on:
+1. Technical Correctness & Depth
+2. Relevance to the question and role
+3. Communication (clarity, structure, conciseness)
+4. Confidence (inferred from sentence structure, lack of excessive hesitation/filler words)
 
 Return valid JSON exactly in this format:
 {
-  "score": <number 1-10>,
-  "feedback": "<constructive feedback string explaining the evaluation based on correctness, clarity, and depth>"
+  "technicalScore": <number 0-100>,
+  "relevanceScore": <number 0-100>,
+  "communicationScore": <number 0-100>,
+  "confidenceScore": <number 0-100>,
+  "feedback": "<constructive feedback string explaining the evaluation>"
 }`;
 
   const rawTemplate = await getActivePrompt('ats_scorer', defaultPrompt);
@@ -170,10 +199,11 @@ Return valid JSON exactly in this format:
     questionText,
     expectedKeywordsText: expectedKeywords.join(', '),
     answerText: answerText || '(No answer provided)',
+    timePenaltyInstruction
   });
 
   const response = await groq.chat.completions.create({
-    model: 'llama-3.3-70b-versatile',
+    model: 'openai/gpt-oss-120b',
     messages: [{ role: 'user', content: prompt }],
     temperature: 0.4,
     max_tokens: 512,
@@ -189,7 +219,7 @@ Return valid JSON exactly in this format:
  */
 const generateOverallFeedback = async ({ jobTitle, answers }) => {
   const summary = answers
-    .map((a, i) => `Q${i + 1}: ${a.questionText}\nScore: ${a.aiScore}/10\nAnswer: ${a.answerText?.slice(0, 200)}`)
+    .map((a, i) => `Q${i + 1}: ${a.questionText}\nTechnical: ${a.technicalScore}, Relevance: ${a.relevanceScore}, Comm: ${a.communicationScore}, Conf: ${a.confidenceScore}\nAnswer: ${a.answerText?.slice(0, 200)}`)
     .join('\n\n');
 
   const defaultPrompt = `You are a senior interviewer providing a final interview report.
@@ -199,11 +229,17 @@ Job Title: \${jobTitle}
 Interview Summary:
 \${summary}
 
-Respond with valid JSON exacty in this format:
+Calculate two overall scores (0-100) based on the session summary:
+1. Interview Performance Score (weighted average of the technical, relevance, communication, and confidence scores across all answers)
+2. Career Readiness Score (holistic evaluation of technical readiness and role alignment)
+
+Respond with valid JSON exactly in this format:
 {
-  "overallScore": <number 1-100>,
+  "interviewPerformanceScore": <number 0-100>,
+  "careerReadinessScore": <number 0-100>,
   "strengths": ["<point 1>", "<point 2>"],
   "weaknesses": ["<point 1>", "<point 2>"],
+  "skillGaps": ["<skill 1>", "<skill 2>"],
   "improvementTips": ["<point 1>", "<point 2>"]
 }`;
 
@@ -211,7 +247,7 @@ Respond with valid JSON exacty in this format:
   const prompt      = formatPrompt(rawTemplate, { jobTitle, summary });
 
   const response = await groq.chat.completions.create({
-    model: 'llama-3.3-70b-versatile',
+    model: 'openai/gpt-oss-120b',
     messages: [{ role: 'user', content: prompt }],
     temperature: 0.5,
     max_tokens: 1024,
@@ -261,7 +297,7 @@ JOB_DESCRIPTION:
 ${jdText || 'Not provided'}`;
 
   const response = await groq.chat.completions.create({
-    model: 'llama-3.3-70b-versatile',
+    model: 'openai/gpt-oss-120b',
     messages: [
       { role: 'system', content: systemPrompt },
       { role: 'user', content: userPrompt },
@@ -322,7 +358,7 @@ Output:
 Numbered list of questions.`;
 
   const response = await groq.chat.completions.create({
-    model: 'llama-3.3-70b-versatile',
+    model: 'openai/gpt-oss-120b',
     messages: [
       { role: 'system', content: systemPrompt },
       { role: 'user', content: userPrompt },
@@ -374,7 +410,7 @@ Return JSON exactly as:
 }`;
 
   const response = await groq.chat.completions.create({
-    model: 'llama-3.3-70b-versatile',
+    model: 'openai/gpt-oss-120b',
     messages: [
       { role: 'system', content: systemPrompt },
       { role: 'user', content: userPrompt },
@@ -424,7 +460,7 @@ Output:
 Single follow-up question.`;
 
   const response = await groq.chat.completions.create({
-    model: 'llama-3.3-70b-versatile',
+    model: 'openai/gpt-oss-120b',
     messages: [
       { role: 'system', content: systemPrompt },
       { role: 'user', content: userPrompt },
@@ -471,7 +507,7 @@ Return JSON exactly as:
 }`;
 
   const response = await groq.chat.completions.create({
-    model: 'llama-3.3-70b-versatile',
+    model: 'openai/gpt-oss-120b',
     messages: [
       { role: 'system', content: systemPrompt },
       { role: 'user', content: userPrompt },
@@ -515,7 +551,7 @@ Response:
 ${modelOutput}`;
 
   const response = await groq.chat.completions.create({
-    model: 'llama-3.3-70b-versatile',
+    model: 'openai/gpt-oss-120b',
     messages: [
       { role: 'system', content: systemPrompt },
       { role: 'user', content: userPrompt },
@@ -583,7 +619,7 @@ Job Description:
 ${jobDescription}`;
 
   const response = await groq.chat.completions.create({
-    model: 'llama-3.3-70b-versatile',
+    model: 'openai/gpt-oss-120b',
     messages: [
       { role: 'system', content: systemPrompt },
       { role: 'user', content: userPrompt },

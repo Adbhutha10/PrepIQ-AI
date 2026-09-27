@@ -27,13 +27,24 @@ export default function InterviewSessionPage() {
   const [startTime, setStartTime] = useState(Date.now());
   const [elapsed, setElapsed] = useState(0);
 
+  // Sync state to local storage to prevent data loss on refresh
+  useEffect(() => {
+    if (session?._id) {
+      const stateToSave = { currentIdx, elapsed, answerText, savedAnswers, startTime };
+      localStorage.setItem(`interviewState_${session._id}`, JSON.stringify(stateToSave));
+    }
+  }, [currentIdx, elapsed, answerText, savedAnswers, session?._id, startTime]);
+
   // Live WebSocket AI Flow
   const [socket, setSocket] = useState(null);
   const [liveFeedback, setLiveFeedback] = useState('');
   const [isReceivingFeedback, setIsReceivingFeedback] = useState(false);
 
   useEffect(() => {
-    const s = io(import.meta.env.VITE_API_URL || 'http://localhost:5000', { withCredentials: true });
+    const rawApiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+    const socketUrl = import.meta.env.VITE_SOCKET_URL ||
+      (rawApiUrl.startsWith('http') ? rawApiUrl.replace(/\/api\/?$/, '') : window.location.origin);
+    const s = io(socketUrl, { withCredentials: true });
     setSocket(s);
     
     s.on("ai_chunk", (chunk) => {
@@ -157,11 +168,25 @@ export default function InterviewSessionPage() {
     }
   }, [currentIdx, recognition]);
 
-  // Elapsed timer
+  // Elapsed timer & Auto-submit
   useEffect(() => {
-    const timer = setInterval(() => setElapsed(Math.floor((Date.now() - startTime) / 1000)), 1000);
+    const timer = setInterval(() => {
+      const currentElapsed = Math.floor((Date.now() - startTime) / 1000);
+      setElapsed(currentElapsed);
+    }, 1000);
     return () => clearInterval(timer);
   }, [startTime]);
+
+  useEffect(() => {
+    if (elapsed >= 120 && !submitting && !completing && interview && session) {
+      toast.error('Time is up! Auto-submitting your answer.', { icon: '⏰' });
+      if (currentIdx < (interview?.questions?.length || 0) - 1) {
+        handleNext(false);
+      } else {
+        handleComplete();
+      }
+    }
+  }, [elapsed, submitting, completing, interview, session, currentIdx]);
 
   const formatTime = (s) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
 
@@ -171,7 +196,28 @@ export default function InterviewSessionPage() {
         const { data: intData } = await interviewAPI.getById(interviewId);
         setInterview(intData.interview);
         const { data: sessData } = await sessionAPI.start(interviewId);
-        setSession(sessData.session);
+        const activeSession = sessData.session;
+        setSession(activeSession);
+
+        // Restore state if it exists
+        const savedState = localStorage.getItem(`interviewState_${activeSession._id}`);
+        if (savedState) {
+          try {
+            const parsed = JSON.parse(savedState);
+            setCurrentIdx(parsed.currentIdx || 0);
+            setAnswerText(parsed.answerText || '');
+            setSavedAnswers(parsed.savedAnswers || {});
+            
+            // Adjust start time so the elapsed timer resumes correctly
+            if (parsed.elapsed) {
+              setElapsed(parsed.elapsed);
+              setStartTime(Date.now() - (parsed.elapsed * 1000));
+            }
+          } catch (e) {
+            console.error("Failed to parse saved session state", e);
+          }
+        }
+
       } catch (err) {
         toast.error(err.response?.data?.message || 'Failed to start session');
         navigate('/interviews');
@@ -232,6 +278,10 @@ export default function InterviewSessionPage() {
     setCompleting(true);
     try {
       await sessionAPI.complete(session._id);
+      
+      // Cleanup local storage
+      localStorage.removeItem(`interviewState_${session._id}`);
+      
       toast.success('Session completed! Loading your results...');
       navigate(`/sessions/${session._id}/results`);
     } catch (err) {
@@ -245,8 +295,8 @@ export default function InterviewSessionPage() {
     return (
       <div className="flex items-center justify-center h-96">
         <div className="text-center">
-          <BrainCircuit className="w-12 h-12 text-brand-400 mx-auto mb-4 animate-pulse" />
-          <p className="text-slate-400">Loading your interview session...</p>
+          <BrainCircuit className="w-12 h-12 text-indigo-500 mx-auto mb-4 animate-pulse" />
+          <p className="text-slate-500">Loading your interview session...</p>
         </div>
       </div>
     );
@@ -259,15 +309,15 @@ export default function InterviewSessionPage() {
       {/* Header */}
       <div className="card p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div>
-          <h2 className="font-display font-bold text-white">{interview.jobTitle}</h2>
-          <p className="text-slate-400 text-sm capitalize">{interview.experienceLevel} level • {totalQuestions} questions</p>
+          <h2 className="font-display font-bold text-slate-900">{interview.jobTitle}</h2>
+          <p className="text-slate-500 text-sm capitalize">{interview.experienceLevel} level • {totalQuestions} questions</p>
         </div>
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5 text-sm bg-surface px-3 py-1.5 rounded-lg border border-surface-border">
-            <Clock className="w-4 h-4 text-brand-400" />
-            <span className="text-white font-mono">{formatTime(elapsed)}</span>
+          <div className={`flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-lg border transition-colors ${elapsed >= 100 ? 'bg-red-100 border-red-200 text-red-600 animate-pulse' : elapsed >= 90 ? 'bg-amber-100 border-amber-200 text-amber-700' : 'bg-slate-100 border-slate-200 text-slate-700'}`}>
+            <Clock className="w-4 h-4" />
+            <span className="font-mono">{formatTime(elapsed)} / 02:00</span>
           </div>
-          <span className="text-sm text-slate-400">{currentIdx + 1} / {totalQuestions}</span>
+          <span className="text-sm text-slate-500">{currentIdx + 1} / {totalQuestions}</span>
         </div>
       </div>
 
@@ -300,7 +350,7 @@ export default function InterviewSessionPage() {
           </div>
 
           <div className="flex items-start justify-between gap-4">
-            <p className="text-white text-lg leading-relaxed font-medium">
+            <p className="text-slate-900 text-lg leading-relaxed font-medium">
               {currentQuestion?.questionText}
             </p>
             <button
@@ -308,8 +358,8 @@ export default function InterviewSessionPage() {
               onClick={toggleSpeakQuestion}
               className={`flex-shrink-0 p-2 rounded-full transition-colors ${
                 isSpeaking 
-                  ? 'bg-brand-500/20 text-brand-400 animate-pulse' 
-                  : 'bg-surface hover:bg-surface-hover text-slate-400 border border-surface-border'
+                  ? 'bg-indigo-100 text-indigo-600 animate-pulse' 
+                  : 'bg-slate-100 hover:bg-slate-200 text-slate-500 border border-slate-200'
               }`}
               title="Read Question Aloud"
             >
@@ -325,7 +375,7 @@ export default function InterviewSessionPage() {
               <button 
                 type="button"
                 onClick={toggleListening}
-                className={`flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-md transition-colors ${isListening ? 'bg-red-500/20 text-red-400 border border-red-500/30 animate-pulse' : 'bg-surface hover:bg-surface-hover text-slate-400 border border-surface-border'}`}
+                className={`flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-md transition-colors ${isListening ? 'bg-red-100 text-red-600 border border-red-200 animate-pulse' : 'bg-slate-100 hover:bg-slate-200 text-slate-500 border border-slate-200'}`}
               >
                 <Mic className="w-3.5 h-3.5" />
                 {isListening ? 'Listening...' : 'Voice Input'}
@@ -342,8 +392,8 @@ export default function InterviewSessionPage() {
 
           {/* Keywords hint */}
           {currentQuestion?.expectedKeywords?.length > 0 && (
-            <div className="p-3 rounded-lg bg-brand-600/10 border border-brand-500/20">
-              <p className="text-xs text-brand-300">
+            <div className="p-3 rounded-lg bg-indigo-50 border border-indigo-200">
+              <p className="text-xs text-indigo-700">
                 💡 <strong>Topic hints:</strong> {currentQuestion.expectedKeywords.join(' • ')}
               </p>
             </div>
@@ -365,14 +415,14 @@ export default function InterviewSessionPage() {
               <motion.div 
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
-                className="mt-3 p-4 bg-surface rounded-lg border border-brand-500/30 font-mono text-sm text-brand-100"
+                className="mt-3 p-4 bg-indigo-50 rounded-lg border border-indigo-200 font-mono text-sm text-indigo-900"
               >
-                <div className="flex items-center gap-2 mb-2 pb-2 border-b border-brand-500/20">
-                   <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-                   <span className="text-brand-300 font-bold text-xs uppercase tracking-wider">Live Interviewer Stream</span>
+                <div className="flex items-center gap-2 mb-2 pb-2 border-b border-indigo-200">
+                   <div className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse" />
+                   <span className="text-indigo-700 font-bold text-xs uppercase tracking-wider">Live Interviewer Stream</span>
                 </div>
                 {liveFeedback}
-                {isReceivingFeedback && <span className="inline-block w-1.5 h-3 ml-1 bg-brand-400 animate-pulse" />}
+                {isReceivingFeedback && <span className="inline-block w-1.5 h-3 ml-1 bg-indigo-500 animate-pulse" />}
               </motion.div>
             )}
           </div>

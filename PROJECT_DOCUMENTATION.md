@@ -1,8 +1,8 @@
-# AI Interviewer Project Guide
+# PrepIQ AI Project Guide
 
 ## 1. Project Summary
 
-AI Interviewer is a full-stack platform for practicing job interviews with an AI interviewer. A candidate can create an account, upload a resume, configure an interview for a role, answer generated questions, and receive scores and written feedback. The application also includes job discovery, resume-based recommendations, and an administration console.
+PrepIQ AI is a full-stack platform for practicing job interviews with an AI interviewer. A candidate can create an account, upload a resume, configure an interview for a role, answer generated questions, and receive scores and written feedback. The application also includes job discovery, resume-based recommendations, and an administration console.
 
 The repository contains two applications:
 
@@ -45,14 +45,19 @@ The root `package.json` provides commands for installing and running both applic
 
 ```text
 AI-Interviewer/
-|-- package.json                 Root development commands
-|-- README.md                    Existing quick-start documentation
+|-- package.json                 Root development & docker scripts
+|-- docker-compose.yml           Full-stack Docker Compose orchestration
+|-- .env.example                 Root environment variable defaults
+|-- DOCKER_INSTRUCTIONS.md       Step-by-step guide for running with Docker
+|-- README.md                    Main documentation & quick-start guide
 |-- CONTRIBUTING.md              Contribution guidelines
 |-- SECURITY.md                  Security guidance
 |-- LICENSE                      MIT license
 |-- backend/
 |   |-- package.json
-|   |-- BACKEND_STRUCTURE.md     Backend notes; this guide is more current
+|   |-- Dockerfile               Backend Docker configuration
+|   |-- .dockerignore            Backend Docker context exclusions
+|   |-- BACKEND_STRUCTURE.md     Backend architecture notes
 |   `-- src/
 |       |-- app.js               Express application and API registration
 |       |-- server.js            HTTP server and process bootstrap
@@ -67,6 +72,9 @@ AI-Interviewer/
 |       `-- utils/               Shared errors, caching, normalization, and clients
 `-- frontend/
     |-- package.json
+    |-- Dockerfile               Frontend multi-stage NGINX Docker build
+    |-- nginx.conf               NGINX SPA routing & API/Socket proxy config
+    |-- .dockerignore            Frontend Docker context exclusions
     |-- index.html
     |-- vite.config.js           Development server and API proxy
     |-- tailwind.config.js
@@ -87,6 +95,17 @@ AI-Interviewer/
 ```
 
 ## 4. Running the Project
+
+### Option A: Docker Compose (Recommended)
+
+Run MongoDB, Redis, Backend, and Frontend in containers with a single command:
+
+```bash
+docker compose up --build
+```
+Open **`http://localhost:5173`** in your browser.
+
+### Option B: Local Development (Manual Setup)
 
 ### Requirements
 
@@ -137,7 +156,7 @@ Typical frontend configuration:
 
 ```env
 VITE_API_URL=/api
-VITE_APP_NAME=AI Interviewer
+VITE_APP_NAME=PrepIQ AI
 ```
 
 ### Start in development

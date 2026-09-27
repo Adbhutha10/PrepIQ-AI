@@ -103,7 +103,7 @@ export default function AdminLoginPage() {
                   name="email"
                   value={form.email}
                   onChange={handleChange}
-                  placeholder="aftab@admin.com"
+                  placeholder="admin@interview.com"
                   className="form-input pl-10"
                   autoComplete="email"
                   autoFocus

@@ -1,8 +1,8 @@
-# 🤖 AI Interviewer
+# 🤖 PrepIQ AI
 
 <div align="center">
 
-![AI Interviewer Banner](https://img.shields.io/badge/AI-Interviewer-6C63FF?style=for-the-badge&logo=robot&logoColor=white)
+![PrepIQ AI Banner](https://img.shields.io/badge/PrepIQ--AI-6C63FF?style=for-the-badge&logo=robot&logoColor=white)
 ![Node.js](https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white)
 ![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
 ![MongoDB](https://img.shields.io/badge/MongoDB-4EA94B?style=for-the-badge&logo=mongodb&logoColor=white)
@@ -18,7 +18,7 @@
 
 ## 📖 About the Project
 
-**AI Interviewer** is a full-stack web application that conducts AI-powered mock interviews for candidates. This platform:
+**PrepIQ AI** is a full-stack web application that conducts AI-powered mock interviews for candidates. This platform:
 
 - Uploads and parses your **Resume (PDF)**
 - Generates **intelligent interview questions** based on Job Description and Topics (via RAG pipeline)
@@ -32,6 +32,8 @@
 
 | Feature | Description |
 |---|---|
+| 🎨 **Modern UI/UX** | Professional light theme, Glassmorphism, Smooth scroll animations (Framer Motion) |
+| 🚀 **Dynamic Landing** | Interactive animated mockup, Sticky Nav, Floating CTA, FAQ Accordion |
 | 📄 **Resume Parsing** | PDF upload → Text extraction → Semantic chunking |
 | 🧠 **RAG Pipeline** | LangChain + OpenAI Embeddings → Context-aware question generation |
 | 💬 **Real-time Interview** | Live follow-up questions via Socket.io streaming |
@@ -119,7 +121,22 @@ AI-Interviewer/
 
 ## 🚀 Getting Started
 
-### Prerequisites
+### 🐳 Quick Start with Docker (Recommended)
+
+Run the entire full-stack application (MongoDB, Redis, Backend, Frontend) with **a single command**:
+
+1. **Unzip the repository & open a terminal in the project root directory**.
+2. **Run Docker Compose**:
+   ```bash
+   docker compose up --build
+   ```
+3. **Open [http://localhost:5173](http://localhost:5173)** in your browser!
+
+> 💡 **No setup required!** Docker automatically spins up MongoDB database & Redis cache containers. Pre-configured API defaults are included so it works immediately out of the box!
+
+---
+
+### Prerequisites (for Manual / Non-Docker Setup)
 
 The following must be installed before proceeding:
 
@@ -138,8 +155,8 @@ The following must be installed before proceeding:
 **1. Clone the Repository**
 
 ```bash
-git clone https://github.com/your-username/AI-Interviewer.git
-cd AI-Interviewer
+git clone https://github.com/Adbhutha10/PrepIQ-AI.git
+cd PrepIQ-AI
 ```
 
 **2. Backend Setup**
@@ -312,7 +329,7 @@ This project is under the [MIT License](LICENSE).
 
 ## 👨‍💻 Author
 
-**Aftab Alam** — AI Project
+**Adbhutha** — AI Interviewer Platform
 
 ---
 

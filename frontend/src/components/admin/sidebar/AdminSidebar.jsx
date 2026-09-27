@@ -137,7 +137,7 @@ export default function AdminSidebar({ collapsed, onNavClick }) {
         </div>
         {!collapsed && (
           <div className="min-w-0">
-            <p className="text-white font-bold text-sm leading-tight">AI Interviewer</p>
+            <p className="text-white font-bold text-sm leading-tight">PrepIQ AI</p>
             <div className="flex items-center gap-1 mt-0.5">
               {isSuperAdmin ? (
                 <>

@@ -33,8 +33,8 @@ export default function SessionHistoryPage() {
   return (
     <div className="space-y-6 animate-fade-in">
       <div>
-        <h2 className="text-2xl font-display font-bold text-white">Session History</h2>
-        <p className="text-slate-400 mt-1">Track your interview practice progress over time</p>
+        <h2 className="text-2xl font-display font-bold text-slate-900">Session History</h2>
+        <p className="text-slate-500 mt-1">Track your interview practice progress over time</p>
       </div>
 
       {loading ? (
@@ -49,7 +49,7 @@ export default function SessionHistoryPage() {
       ) : sessions.length === 0 ? (
         <div className="card p-16 text-center">
           <History className="w-14 h-14 text-slate-600 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-white mb-2">No sessions yet</h3>
+          <h3 className="text-lg font-semibold text-slate-900 mb-2">No sessions yet</h3>
           <p className="text-slate-500 mb-6">Complete your first interview to see results here</p>
           <Link to="/interviews/new" className="btn-primary inline-flex">Start Practicing</Link>
         </div>
@@ -73,12 +73,12 @@ export default function SessionHistoryPage() {
                     className="card p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-brand-500/40 transition-all group"
                   >
                     <div className="flex items-start gap-4">
-                      <div className="p-2.5 bg-brand-600/20 rounded-xl flex-shrink-0">
-                        <Building2 className="w-5 h-5 text-brand-400" />
+                      <div className="p-2.5 bg-indigo-100 rounded-xl flex-shrink-0">
+                        <Building2 className="w-5 h-5 text-indigo-500" />
                       </div>
                       <div>
                         <div className="flex flex-wrap items-center gap-2 mb-1">
-                          <h3 className="font-semibold text-white">
+                          <h3 className="font-semibold text-slate-900">
                             {session.interviewId?.jobTitle || 'Unknown Role'}
                           </h3>
                           <span className={`badge ${STATUS_BADGE[session.status] || 'badge-slate'} capitalize`}>
@@ -110,7 +110,7 @@ export default function SessionHistoryPage() {
                         <span className="text-slate-600 text-sm">—</span>
                       )}
                       {session.status === 'completed' && (
-                        <ChevronRight className="w-5 h-5 text-slate-500 group-hover:text-brand-400 transition-colors" />
+                        <ChevronRight className="w-5 h-5 text-slate-500 group-hover:text-indigo-500 transition-colors" />
                       )}
                     </div>
                   </Link>
@@ -125,7 +125,7 @@ export default function SessionHistoryPage() {
               <button onClick={() => fetchSessions(page - 1)} disabled={page === 1} className="btn-secondary px-4 py-2 disabled:opacity-30">
                 &larr; Prev
               </button>
-              <span className="text-sm text-slate-400 px-2">Page {page} of {totalPages}</span>
+              <span className="text-sm text-slate-500 px-2">Page {page} of {totalPages}</span>
               <button onClick={() => fetchSessions(page + 1)} disabled={page === totalPages} className="btn-secondary px-4 py-2 disabled:opacity-30">
                 Next &rarr;
               </button>

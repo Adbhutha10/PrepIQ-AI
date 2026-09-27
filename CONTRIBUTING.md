@@ -1,6 +1,6 @@
-# Contributing to AI-Interviewer
+# Contributing to PrepIQ AI
 
-First, thank you for your interest in contributing to AI-Interviewer.
+First, thank you for your interest in contributing to PrepIQ AI.
 
 We welcome bug fixes, feature improvements, documentation updates, performance optimizations, and new ideas that improve the project.
 
@@ -25,13 +25,13 @@ Fork this repository to your GitHub account.
 ### 2. Clone Your Fork
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/AI-Interviewer.git
+git clone https://github.com/Adbhutha10/PrepIQ-AI.git
 ```
 
 ### 3. Navigate to the Project
 
 ```bash
-cd AI-Interviewer
+cd PrepIQ-AI
 ```
 
 ### 4. Install Dependencies
@@ -206,4 +206,4 @@ Constructive feedback is encouraged. Harassment, abusive behavior, or discrimina
 
 If you have questions, open an Issue and we'll be happy to discuss them.
 
-Thank you for contributing to AI-Interviewer.
+Thank you for contributing to PrepIQ AI.

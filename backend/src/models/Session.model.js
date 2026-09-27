@@ -10,7 +10,11 @@ const answerSchema = new mongoose.Schema({
   answerAudio: { type: String, default: null }, // Cloudinary URL
   timeTaken: { type: Number, default: 0 },      // in seconds
   aiFeedback: { type: String, default: null },
-  aiScore: { type: Number, min: 0, max: 10, default: null },
+  aiScore: { type: Number, min: 0, max: 10, default: null }, // Legacy out of 10
+  technicalScore: { type: Number, min: 0, max: 100, default: null },
+  relevanceScore: { type: Number, min: 0, max: 100, default: null },
+  communicationScore: { type: Number, min: 0, max: 100, default: null },
+  confidenceScore: { type: Number, min: 0, max: 100, default: null },
   skipped: { type: Boolean, default: false },
 });
 
@@ -55,8 +59,18 @@ const sessionSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    interviewPerformanceScore: {
+      type: Number,
+      min: 0, max: 100, default: null
+    },
+    careerReadinessScore: {
+      type: Number,
+      min: 0, max: 100, default: null
+    },
     strengths: [String],
-    areasForImprovement: [String],
+    weaknesses: [String], // Updated from areasForImprovement to match UI/expectations
+    areasForImprovement: [String], // Legacy
+    skillGaps: [String],
     recommendedResources: [String],
   },
   { timestamps: true }

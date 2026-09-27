@@ -27,7 +27,7 @@ export default function AdminSettingsPage() {
   // Unified Form settings state
   const [form, setForm] = useState({
     general: {
-      appName: 'AI Interviewer',
+      appName: 'PrepIQ AI',
       logo: '',
       theme: 'dark',
       maintenanceMode: false,

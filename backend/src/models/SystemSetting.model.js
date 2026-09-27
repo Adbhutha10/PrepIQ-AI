@@ -10,7 +10,7 @@ const mongoose = require('mongoose');
 const systemSettingSchema = new mongoose.Schema(
   {
     general: {
-      appName: { type: String, default: 'AI Interviewer' },
+      appName: { type: String, default: 'PrepIQ AI' },
       logo: { type: String, default: '' },
       theme: { type: String, enum: ['dark', 'light', 'custom'], default: 'dark' },
       maintenanceMode: { type: Boolean, default: false },

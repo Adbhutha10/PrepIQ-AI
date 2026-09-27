@@ -54,12 +54,12 @@ export default function ProfilePage() {
     <div className="max-w-2xl mx-auto space-y-6 animate-fade-in">
       {/* Avatar / Info */}
       <div className="card p-6 flex items-center gap-5">
-        <div className="w-20 h-20 rounded-2xl bg-gradient-brand flex items-center justify-center text-white font-display font-bold text-3xl flex-shrink-0">
+        <div className="w-20 h-20 rounded-2xl bg-gradient-brand flex items-center justify-center text-slate-900 font-display font-bold text-3xl flex-shrink-0">
           {user?.name?.charAt(0).toUpperCase()}
         </div>
         <div>
-          <h2 className="text-xl font-display font-bold text-white">{user?.name}</h2>
-          <p className="text-slate-400 text-sm">{user?.email}</p>
+          <h2 className="text-xl font-display font-bold text-slate-900">{user?.name}</h2>
+          <p className="text-slate-500 text-sm">{user?.email}</p>
           <div className="flex items-center gap-3 mt-2">
             <span className="badge badge-brand capitalize">{user?.role}</span>
             <span className="text-xs text-slate-500">{user?.totalSessions} sessions completed</span>
@@ -69,8 +69,8 @@ export default function ProfilePage() {
 
       {/* Profile Form */}
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="card p-6">
-        <h3 className="font-semibold text-white mb-5 flex items-center gap-2">
-          <User className="w-5 h-5 text-brand-400" /> Personal Information
+        <h3 className="font-semibold text-slate-900 mb-5 flex items-center gap-2">
+          <User className="w-5 h-5 text-indigo-500" /> Personal Information
         </h3>
 
         <form onSubmit={handleSubmit(onProfileSave)} className="space-y-4">
@@ -82,7 +82,7 @@ export default function ProfilePage() {
           </div>
           <div>
             <label className="form-label">Email Address</label>
-            <input type="email" className="form-input bg-surface-hover opacity-60 cursor-not-allowed"
+            <input type="email" className="form-input bg-slate-100 opacity-60 cursor-not-allowed"
               disabled {...register('email')} />
             <p className="text-slate-500 text-xs mt-1">Email cannot be changed</p>
           </div>
@@ -97,8 +97,8 @@ export default function ProfilePage() {
 
       {/* Password Form */}
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="card p-6">
-        <h3 className="font-semibold text-white mb-5 flex items-center gap-2">
-          <Lock className="w-5 h-5 text-brand-400" /> Change Password
+        <h3 className="font-semibold text-slate-900 mb-5 flex items-center gap-2">
+          <Lock className="w-5 h-5 text-indigo-500" /> Change Password
         </h3>
 
         <form onSubmit={handlePwd(onPasswordSave)} className="space-y-4">
@@ -141,8 +141,8 @@ export default function ProfilePage() {
 
       {/* Account Info */}
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="card p-6">
-        <h3 className="font-semibold text-white mb-4 flex items-center gap-2">
-          <Mail className="w-5 h-5 text-brand-400" /> Account Details
+        <h3 className="font-semibold text-slate-900 mb-4 flex items-center gap-2">
+          <Mail className="w-5 h-5 text-indigo-500" /> Account Details
         </h3>
         <div className="space-y-3">
           {[
@@ -150,9 +150,9 @@ export default function ProfilePage() {
             { label: 'Account Type', value: user?.role === 'admin' ? 'Administrator' : 'Candidate' },
             { label: 'Total Sessions', value: user?.totalSessions ?? 0 },
           ].map(({ label, value }) => (
-            <div key={label} className="flex justify-between items-center py-2 border-b border-surface-border last:border-0">
-              <span className="text-slate-400 text-sm">{label}</span>
-              <span className="text-white text-sm font-medium">{value}</span>
+            <div key={label} className="flex justify-between items-center py-2 border-b border-slate-200 last:border-0">
+              <span className="text-slate-500 text-sm">{label}</span>
+              <span className="text-slate-900 text-sm font-medium">{value}</span>
             </div>
           ))}
         </div>

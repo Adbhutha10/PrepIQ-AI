@@ -2,7 +2,7 @@
 
 ## Supported Versions
 
-The following versions of AI-Interviewer receive security updates.
+The following versions of PrepIQ AI receive security updates.
 
 | Version | Supported |
 |---------|-----------|
@@ -18,7 +18,7 @@ If you discover a security vulnerability, please **do not open a public GitHub i
 
 Instead, report it privately by contacting:
 
-**Email:** course.aftabalam@gmail.com
+**Email:** security@example.com
 
 Please include:
 
@@ -77,4 +77,4 @@ The following are generally considered out of scope:
 
 Please allow us reasonable time to investigate and resolve reported vulnerabilities before publicly disclosing them.
 
-We appreciate responsible security research that helps improve AI-Interviewer.
+We appreciate responsible security research that helps improve PrepIQ AI.

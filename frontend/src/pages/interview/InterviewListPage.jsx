@@ -57,8 +57,8 @@ export default function InterviewListPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         <div>
-          <h2 className="text-2xl font-display font-bold text-white">My Interviews</h2>
-          <p className="text-slate-400 mt-1">{interviews.length} interview{interviews.length !== 1 ? 's' : ''} created</p>
+          <h2 className="text-2xl font-display font-bold text-slate-900">My Interviews</h2>
+          <p className="text-slate-500 mt-1">{interviews.length} interview{interviews.length !== 1 ? 's' : ''} created</p>
         </div>
         <Link to="/interviews/new" className="btn-primary flex-shrink-0">
           <Plus className="w-4 h-4" /> New Interview
@@ -90,7 +90,7 @@ export default function InterviewListPage() {
       ) : filtered.length === 0 ? (
         <div className="card p-16 text-center">
           <Briefcase className="w-14 h-14 text-slate-600 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-white mb-2">
+          <h3 className="text-lg font-semibold text-slate-900 mb-2">
             {search ? 'No results found' : 'No interviews yet'}
           </h3>
           <p className="text-slate-500 mb-6">
@@ -119,17 +119,17 @@ export default function InterviewListPage() {
               >
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="flex items-start gap-4">
-                    <div className="p-3 bg-brand-600/20 rounded-xl flex-shrink-0">
-                      <Briefcase className="w-5 h-5 text-brand-400" />
+                    <div className="p-3 bg-indigo-100 rounded-xl flex-shrink-0">
+                      <Briefcase className="w-5 h-5 text-indigo-500" />
                     </div>
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2 mb-1">
-                        <h3 className="font-semibold text-white">{interview.jobTitle}</h3>
+                        <h3 className="font-semibold text-slate-900">{interview.jobTitle}</h3>
                         <span className={statusInfo.cls}>{statusInfo.label}</span>
                         <span className={genInfo.cls}>{genInfo.label}</span>
                       </div>
                       {interview.company && (
-                        <p className="text-slate-400 text-sm">{interview.company}</p>
+                        <p className="text-slate-500 text-sm">{interview.company}</p>
                       )}
                       <div className="flex items-center gap-4 mt-2 text-xs text-slate-500">
                         <span className="capitalize">{interview.experienceLevel} level</span>

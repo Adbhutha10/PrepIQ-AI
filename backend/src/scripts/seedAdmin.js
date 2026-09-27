@@ -10,8 +10,8 @@ const bcrypt   = require('bcryptjs');
 const User     = require('../models/User.model');
 
 const ADMIN = {
-  name:     'Aftab Admin',
-  email:    'aftab@admin.com',
+  name:     'System Admin',
+  email:    'admin@interview.com',
   password: 'passwore123',
   role:     'super_admin',   // Super Admin — full platform access
 };

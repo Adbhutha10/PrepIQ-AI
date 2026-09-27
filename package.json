@@ -1,13 +1,15 @@
 {
-  "name": "ai-interview-app",
+  "name": "prepiq-ai",
   "version": "1.0.0",
-  "description": "Full-stack AI Interview Application",
+  "description": "Full-stack PrepIQ AI Mock Interview Platform",
   "scripts": {
     "dev:backend": "cd backend && npm run dev",
     "dev:frontend": "cd frontend && npm run dev",
     "install:all": "cd backend && npm install && cd ../frontend && npm install",
     "start": "cd backend && npm start",
-    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\""
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "docker:up": "docker compose up --build",
+    "docker:down": "docker compose down"
   },
   "dependencies": {
     "concurrently": "^10.0.3"

@@ -14,7 +14,7 @@ const getOrCreateSettings = async () => {
   if (!settings) {
     settings = await SystemSetting.create({
       general: {
-        appName: 'AI Interviewer',
+        appName: 'PrepIQ AI',
         logo: '',
         theme: 'dark',
         maintenanceMode: false,

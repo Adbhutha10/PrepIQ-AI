@@ -9,14 +9,12 @@ import { useAuthStore } from '@/store/authStore';
 import toast from 'react-hot-toast';
 
 const NAV_ITEMS = [
-  { to: '/dashboard',   icon: LayoutDashboard,   label: 'Dashboard' },
-  { to: '/interviews',  icon: ClipboardList,      label: 'Interviews' },
+  { to: '/dashboard',      icon: LayoutDashboard,   label: 'Dashboard' },
+  { to: '/interviews',     icon: ClipboardList,      label: 'My Interviews' },
   { to: '/interviews/new', icon: MessageSquarePlus, label: 'New Interview' },
-  { to: '/sessions',    icon: History,            label: 'History' },
-  { to: '/resumes',     icon: FileText,           label: 'Resumes' },
-  { to: '/jobs',        icon: Briefcase,          label: 'Jobs' },
-  { to: '/jobs/recommended', icon: Sparkles,       label: 'Recommendations' },
-  { to: '/profile',     icon: User,               label: 'Profile' },
+  { to: '/sessions',       icon: History,            label: 'Session History' },
+  { to: '/resumes',        icon: FileText,           label: 'Resume Vault' },
+  { to: '/profile',        icon: User,               label: 'Profile & Settings' },
 ];
 
 export default function Sidebar({ isOpen, onClose }) {
@@ -48,7 +46,7 @@ export default function Sidebar({ isOpen, onClose }) {
           >
             <button
               onClick={onClose}
-              className="absolute top-4 right-4 p-1 rounded-lg text-slate-400 hover:text-white hover:bg-surface-hover"
+              className="absolute top-4 right-4 p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100"
             >
               <X className="w-5 h-5" />
             </button>
@@ -64,11 +62,8 @@ function SidebarContent({ user, onLogout, onNavClick }) {
   return (
     <div className="flex flex-col h-full">
       {/* Logo */}
-      <div className="flex items-center gap-3 px-6 py-6 border-b border-surface-border">
-        <div className="p-2 bg-gradient-brand rounded-xl">
-          <BrainCircuit className="w-5 h-5 text-white" />
-        </div>
-        <span className="font-display font-bold text-lg gradient-text">InterviewAI</span>
+      <div className="flex items-center gap-3 px-6 py-6 border-b border-slate-200">
+        <span className="font-display font-bold text-lg gradient-text">PrepIQ AI</span>
       </div>
 
       {/* Nav */}
@@ -83,20 +78,15 @@ function SidebarContent({ user, onLogout, onNavClick }) {
               clsx(
                 'flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-150',
                 isActive
-                  ? 'bg-brand-600/20 text-brand-300 border border-brand-500/30'
-                  : 'text-slate-400 hover:text-white hover:bg-surface-hover'
+                  ? 'bg-indigo-100 text-indigo-700 border border-indigo-200 font-semibold'
+                  : 'text-slate-600 hover:text-indigo-700 hover:bg-indigo-50'
               )
             }
           >
             {({ isActive }) => (
               <>
-                <Icon className={clsx('w-5 h-5', isActive ? 'text-brand-400' : '')} />
+                <Icon className={clsx('w-5 h-5 transition-transform duration-200', isActive ? 'text-indigo-600' : 'text-slate-400')} />
                 <span className="flex-1">{label}</span>
-                {label === 'Jobs' && (
-                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-brand-500/20 text-brand-400 border border-brand-500/20 uppercase tracking-tight">
-                    Soon
-                  </span>
-                )}
               </>
             )}
           </NavLink>
@@ -104,17 +94,17 @@ function SidebarContent({ user, onLogout, onNavClick }) {
       </nav>
 
       {/* User */}
-      <div className="px-4 py-4 border-t border-surface-border">
+      <div className="px-4 py-4 border-t border-slate-200">
         <div className="flex items-center gap-3 mb-3 px-2">
-          <div className="w-9 h-9 rounded-full bg-gradient-brand flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
             {user?.name?.charAt(0).toUpperCase()}
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-medium text-white truncate">{user?.name}</p>
-            <p className="text-xs text-slate-500 truncate">{user?.email}</p>
+            <p className="text-sm font-medium text-slate-800 truncate">{user?.name}</p>
+            <p className="text-xs text-slate-400 truncate">{user?.email}</p>
           </div>
         </div>
-        <button onClick={onLogout} className="btn-ghost w-full text-red-400 hover:text-red-300 hover:bg-red-500/10">
+        <button onClick={onLogout} className="btn-ghost w-full text-red-500 hover:text-red-600 hover:bg-red-50">
           <LogOut className="w-4 h-4" />
           Sign Out
         </button>
