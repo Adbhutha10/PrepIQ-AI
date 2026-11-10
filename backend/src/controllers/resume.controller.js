@@ -1,4 +1,4 @@
-const pdf = require('pdf-parse');
+const { PDFParse } = require('pdf-parse');
 const Resume = require('../models/Resume.model');
 const cloudinary = require('../config/cloudinary');
 const AppError = require('../utils/AppError');
@@ -24,8 +24,13 @@ exports.uploadResume = async (req, res, next) => {
       const response = await fetch(fileUrl);
       const arrayBuffer = await response.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
-      const pdfData = await pdf(buffer);
-      extractedText = pdfData.text?.slice(0, 8000) ?? null; // Limit to 8k chars
+      const parser = new PDFParse({ data: buffer });
+      try {
+        const pdfData = await parser.getText();
+        extractedText = pdfData.text?.slice(0, 8000) ?? null; // Limit to 8k chars
+      } finally {
+        await parser.destroy();
+      }
       parseStatus = 'parsed';
     }
   } catch {
@@ -157,4 +162,3 @@ exports.chunkPreview = async (req, res, next) => {
 
   res.status(200).json({ success: true, summary, chunks: enriched });
 };
-
