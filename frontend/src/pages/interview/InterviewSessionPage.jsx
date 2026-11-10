@@ -41,7 +41,7 @@ export default function InterviewSessionPage() {
   const [isReceivingFeedback, setIsReceivingFeedback] = useState(false);
 
   useEffect(() => {
-    const rawApiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+    const rawApiUrl = import.meta.env.VITE_API_URL || '/api';
     const socketUrl = import.meta.env.VITE_SOCKET_URL ||
       (rawApiUrl.startsWith('http') ? rawApiUrl.replace(/\/api\/?$/, '') : window.location.origin);
     const s = io(socketUrl, { withCredentials: true });
