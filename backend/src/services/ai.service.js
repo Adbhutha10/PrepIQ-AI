@@ -337,6 +337,70 @@ ${jdText || 'Not provided'}`;
 };
 
 /**
+ * ATS Matcher & Keyword Gap Analysis
+ * Compares resume text against target job description for ATS scoring, keyword gaps, and bullet rewrites.
+ * @param {string} resumeText
+ * @param {string} jobDescription
+ * @returns {Promise<Object>}
+ */
+const evaluateResumeAtsMatch = async (resumeText, jobDescription) => {
+  const systemPrompt = `You are an elite Applicant Tracking System (ATS) auditor and career coach for top tech companies.
+Your job is to analyze candidate resumes against job descriptions with brutal accuracy.
+Calculate realistic match percentages, uncover missing critical keywords, and provide high-impact bullet rewrites.
+Always respond with valid JSON only — no extra text, no markdown wrapping.`;
+
+  const userPrompt = `Perform a comprehensive ATS compatibility and keyword gap analysis.
+
+RESUME TEXT:
+${(resumeText || '').slice(0, 7000)}
+
+JOB DESCRIPTION:
+${(jobDescription || '').slice(0, 4000)}
+
+Return strict JSON in this exact structure:
+{
+  "matchScore": 75,
+  "summary": "Candidate matches majority of core backend requirements but lacks cloud orchestration keywords.",
+  "categoryScores": {
+    "skillsMatch": 80,
+    "experienceMatch": 70,
+    "relevanceScore": 75
+  },
+  "matchingKeywords": ["Node.js", "MongoDB", "Express", "REST APIs"],
+  "missingKeywords": ["Kubernetes", "AWS ECS", "Terraform", "CI/CD Pipelines"],
+  "bulletSuggestions": [
+    {
+      "original": "Worked on backend microservices and databases",
+      "improved": "Architected high-throughput Node.js microservices handling 10k+ RPM with MongoDB indexing optimizations",
+      "reason": "Includes quantifiable impact, tech stack keywords, and action verbs."
+    }
+  ],
+  "strengths": ["Strong foundational backend API experience"],
+  "recommendations": ["Incorporate cloud deployment keywords explicitly in work experience."]
+}`;
+
+  const response = await callGroqWithFallback({
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userPrompt },
+    ],
+    temperature: 0.2,
+    max_tokens: 2500,
+    response_format: { type: 'json_object' },
+  });
+
+  const content = response.choices[0]?.message?.content;
+  if (!content) throw new Error('No response from ATS AI evaluator.');
+
+  try {
+    return JSON.parse(content);
+  } catch (err) {
+    logger.error('Failed to parse ATS evaluation JSON:', content);
+    throw new Error('ATS AI evaluator returned invalid JSON.');
+  }
+};
+
+/**
  * Generate specialized technical questions using RAG context
  * @param {Object} params
  * @param {string} params.retrievedChunks - Raw context from RAG
@@ -666,6 +730,7 @@ module.exports = {
   validateGrounding,
   generateTopicQuestions,
   generateQuestionsDirect,
+  evaluateResumeAtsMatch,
 };
 
 

@@ -24,6 +24,7 @@ export const resumeAPI = {
   setDefault: (id) => api.patch(`/resumes/${id}/default`),
   parse: (id, jobDescription = '') =>
     api.post(`/resumes/${id}/parse`, { jobDescription }),
+  checkAts: (data) => api.post('/resumes/ats-score', data),
 };
 
 // ── Interview ──────────────────────────────────────────────────────

@@ -1,10 +1,11 @@
 import { useCallback, useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useDropzone } from 'react-dropzone';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Upload, FileText, Trash2, Star, Loader2, CheckCircle,
   AlertCircle, ExternalLink, ChevronDown, ChevronUp,
-  Cpu, Briefcase, Code2, GraduationCap, RefreshCw, X,
+  Cpu, Briefcase, Code2, GraduationCap, RefreshCw, X, Sparkles, ArrowRight
 } from 'lucide-react';
 import { resumeAPI } from '@/services/api';
 import toast from 'react-hot-toast';
@@ -312,9 +313,19 @@ export default function ResumesPage() {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6 animate-fade-in">
-      <div>
-        <h2 className="text-2xl font-display font-bold text-slate-900">My Resumes</h2>
-        <p className="text-slate-500 mt-1">Upload your resume so AI can personalise your interview questions.</p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-display font-bold text-slate-900">My Resumes</h2>
+          <p className="text-slate-500 mt-1">Upload your resume so AI can personalise your interview questions.</p>
+        </div>
+        <Link
+          to="/resumes/ats"
+          className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold bg-indigo-50 border border-indigo-200 text-indigo-700 hover:bg-indigo-100 transition-colors shadow-sm self-start sm:self-auto"
+        >
+          <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
+          ATS Keyword Matcher
+          <ArrowRight className="w-3 h-3 ml-0.5" />
+        </Link>
       </div>
 
       {/* Dropzone */}

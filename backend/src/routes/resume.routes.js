@@ -9,11 +9,13 @@ const {
   setDefaultResume,
   parseResume,
   chunkPreview,
+  checkAtsCompatibility,
 } = require('../controllers/resume.controller');
 
 router.use(protect);
 
 router.post('/upload', upload.single('resume'), uploadResume);
+router.post('/ats-score', checkAtsCompatibility);
 router.post('/chunk-preview', chunkPreview);      // ← debug: test chunker output
 router.get('/', getMyResumes);
 router.delete('/:id', deleteResume);

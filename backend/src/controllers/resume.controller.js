@@ -4,7 +4,7 @@ const { PDFParse } = require('pdf-parse');
 const Resume = require('../models/Resume.model');
 const cloudinary = require('../config/cloudinary');
 const AppError = require('../utils/AppError');
-const { parseResumeAndJD } = require('../services/ai.service');
+const { parseResumeAndJD, evaluateResumeAtsMatch } = require('../services/ai.service');
 const { chunkDocument, chunkResumeAndJD, estimateTokens } = require('../services/chunking.service');
 const { normalizeText } = require('../utils/normalizer');
 
@@ -181,3 +181,40 @@ exports.chunkPreview = async (req, res, next) => {
 
   res.status(200).json({ success: true, summary, chunks: enriched });
 };
+
+// ─── POST /api/resumes/ats-score ──────────────────────────────────
+// Evaluate ATS score, keyword gap, and bullet rewrites vs Job Description
+exports.checkAtsCompatibility = async (req, res, next) => {
+  const { resumeId, resumeText: rawResumeText, jobDescription } = req.body;
+
+  if (!jobDescription || jobDescription.trim().length < 20) {
+    return next(new AppError('Please provide a job description (at least 20 characters).', 400));
+  }
+
+  let textToEvaluate = rawResumeText || '';
+
+  if (resumeId) {
+    const resume = await Resume.findOne({ _id: resumeId, userId: req.user._id });
+    if (!resume) return next(new AppError('Resume not found.', 404));
+    textToEvaluate = resume.extractedText || '';
+  } else if (!textToEvaluate) {
+    // If no resumeId and no resumeText provided, try the user's default resume
+    const defaultResume = await Resume.findOne({ userId: req.user._id, isDefault: true }) 
+      || await Resume.findOne({ userId: req.user._id }).sort({ createdAt: -1 });
+    if (defaultResume) {
+      textToEvaluate = defaultResume.extractedText || '';
+    }
+  }
+
+  if (!textToEvaluate || textToEvaluate.trim().length < 50) {
+    return next(new AppError('No resume text available for analysis. Please upload or select a resume.', 400));
+  }
+
+  try {
+    const analysis = await evaluateResumeAtsMatch(textToEvaluate, jobDescription);
+    res.status(200).json({ success: true, analysis });
+  } catch (err) {
+    return next(new AppError(`ATS analysis failed: ${err.message}`, 500));
+  }
+};
+

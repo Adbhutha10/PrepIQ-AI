@@ -14,6 +14,7 @@ const NAV_ITEMS = [
   { to: '/interviews/new', icon: MessageSquarePlus, label: 'New Interview' },
   { to: '/sessions',       icon: History,            label: 'Session History' },
   { to: '/resumes',        icon: FileText,           label: 'Resume Vault' },
+  { to: '/resumes/ats',    icon: Sparkles,           label: 'ATS Reviewer' },
   { to: '/profile',        icon: User,               label: 'Profile & Settings' },
 ];
 

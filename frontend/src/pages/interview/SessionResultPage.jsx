@@ -4,9 +4,10 @@ import { motion } from 'framer-motion';
 import {
   Trophy, TrendingUp, ThumbsUp, Target, Lightbulb,
   BookOpen, ChevronDown, ChevronUp, CheckCircle, XCircle,
-  RotateCcw, ArrowLeft, Star, AlertTriangle, Download
+  RotateCcw, ArrowLeft, Star, AlertTriangle, Download, Printer
 } from 'lucide-react';
 import { sessionAPI } from '@/services/api';
+import { useAuthStore } from '@/store/authStore';
 import {
   RadarChart, Radar, PolarGrid, PolarAngleAxis,
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Cell, Legend
@@ -14,6 +15,7 @@ import {
 
 export default function SessionResultPage() {
   const { id } = useParams();
+  const { user } = useAuthStore();
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
   const [expandedAnswer, setExpandedAnswer] = useState(null);
@@ -71,6 +73,34 @@ export default function SessionResultPage() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-8 animate-fade-in pb-12 print:pb-0 print:space-y-4">
+      {/* Printable Executive Header (Visible only when generating PDF/Printing) */}
+      <div className="hidden print:block border-b-2 border-slate-900 pb-4 mb-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-xl font-black tracking-tight text-indigo-600">PREPIQ.AI</span>
+              <span className="text-xs font-semibold px-2 py-0.5 rounded bg-indigo-100 text-indigo-800 uppercase">Assessment Report</span>
+            </div>
+            <p className="text-xs text-slate-500 mt-1">
+              AI-Powered Candidate Competency, Voice & Technical Diagnostic
+            </p>
+          </div>
+          <div className="text-right">
+            <div className="text-sm font-bold text-slate-900">{user?.name || 'Evaluated Candidate'}</div>
+            <div className="text-xs text-slate-600">{user?.email || ''}</div>
+            <div className="text-xs text-slate-400 mt-0.5">
+              {new Date(session.createdAt || Date.now()).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+            </div>
+          </div>
+        </div>
+        <div className="mt-3 flex items-center justify-between text-xs bg-slate-50 border border-slate-200 p-2.5 rounded-lg">
+          <span><strong>Target Job:</strong> {session.interviewId?.jobTitle || 'Custom Assessment'}</span>
+          <span><strong>Assessment Type:</strong> {session.interviewId?.type || 'General'}</span>
+          <span><strong>Total Questions:</strong> {session.answers?.length || 0}</span>
+          <span><strong>Session ID:</strong> #{session._id?.slice(-8).toUpperCase()}</span>
+        </div>
+      </div>
+
       {/* Header Actions */}
       <div className="flex items-center justify-between print:hidden">
         <Link to="/sessions" className="btn-ghost inline-flex">
@@ -78,7 +108,7 @@ export default function SessionResultPage() {
         </Link>
         <button 
           onClick={() => window.print()}
-          className="btn-secondary inline-flex gap-2 bg-slate-100 border-slate-200 text-slate-900"
+          className="btn-primary inline-flex items-center gap-2 shadow-md hover:shadow-lg transition-all"
         >
           <Download className="w-4 h-4" /> Download PDF Report
         </button>
@@ -270,49 +300,47 @@ export default function SessionResultPage() {
                   </div>
                 </button>
 
-                {(isExpanded || true) && ( // During print, we want to see it. Wait, true means always visible. Let's fix this cleanly.
-                  <motion.div
-                    initial={false}
-                    animate={{ height: isExpanded ? 'auto' : 0, opacity: isExpanded ? 1 : 0 }}
-                    className="border-t border-slate-200 bg-surface overflow-hidden print:!h-auto print:!opacity-100"
-                  >
-                    <div className="p-4 space-y-4">
-                      {!answer.skipped && (
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
-                        <div className="bg-slate-100 rounded-lg p-3 text-center border border-slate-200">
-                          <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Technical</p>
-                          <p className="text-lg font-bold text-blue-400">{answer.technicalScore ?? 0}%</p>
-                        </div>
-                        <div className="bg-slate-100 rounded-lg p-3 text-center border border-slate-200">
-                          <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Relevance</p>
-                          <p className="text-lg font-bold text-emerald-400">{answer.relevanceScore ?? 0}%</p>
-                        </div>
-                        <div className="bg-slate-100 rounded-lg p-3 text-center border border-slate-200">
-                          <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Communication</p>
-                          <p className="text-lg font-bold text-amber-400">{answer.communicationScore ?? 0}%</p>
-                        </div>
-                        <div className="bg-slate-100 rounded-lg p-3 text-center border border-slate-200">
-                          <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Confidence</p>
-                          <p className="text-lg font-bold text-violet-400">{answer.confidenceScore ?? 0}%</p>
-                        </div>
+                <div
+                  className={`border-t border-slate-200 bg-surface overflow-hidden print:!block print:!h-auto print:!opacity-100 ${
+                    isExpanded ? 'block' : 'hidden print:block'
+                  }`}
+                >
+                  <div className="p-4 space-y-4">
+                    {!answer.skipped && (
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+                      <div className="bg-slate-100 rounded-lg p-3 text-center border border-slate-200">
+                        <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Technical</p>
+                        <p className="text-lg font-bold text-blue-400">{answer.technicalScore ?? 0}%</p>
                       </div>
-                    )}
-
-                    {answer.answerText && (
-                      <div>
-                        <p className="text-xs text-slate-500 mb-1 uppercase tracking-wide">Your Answer Transcript</p>
-                        <p className="text-slate-700 text-sm leading-relaxed bg-slate-100 p-3 rounded-lg">{answer.answerText}</p>
+                      <div className="bg-slate-100 rounded-lg p-3 text-center border border-slate-200">
+                        <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Relevance</p>
+                        <p className="text-lg font-bold text-emerald-400">{answer.relevanceScore ?? 0}%</p>
                       </div>
-                    )}
-                    {answer.aiFeedback && (
-                        <div className="p-3 rounded-lg bg-brand-600/10 border border-indigo-200">
-                          <p className="text-xs text-indigo-500 mb-1 uppercase tracking-wide">Multimodal AI Feedback</p>
-                          <p className="text-brand-200 text-sm leading-relaxed">{answer.aiFeedback}</p>
-                        </div>
-                      )}
+                      <div className="bg-slate-100 rounded-lg p-3 text-center border border-slate-200">
+                        <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Communication</p>
+                        <p className="text-lg font-bold text-amber-400">{answer.communicationScore ?? 0}%</p>
+                      </div>
+                      <div className="bg-slate-100 rounded-lg p-3 text-center border border-slate-200">
+                        <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Confidence</p>
+                        <p className="text-lg font-bold text-violet-400">{answer.confidenceScore ?? 0}%</p>
+                      </div>
                     </div>
-                  </motion.div>
-                )}
+                  )}
+
+                  {answer.answerText && (
+                    <div>
+                      <p className="text-xs text-slate-500 mb-1 uppercase tracking-wide">Your Answer Transcript</p>
+                      <p className="text-slate-700 text-sm leading-relaxed bg-slate-100 p-3 rounded-lg">{answer.answerText}</p>
+                    </div>
+                  )}
+                  {answer.aiFeedback && (
+                      <div className="p-3 rounded-lg bg-brand-600/10 border border-indigo-200">
+                        <p className="text-xs text-indigo-500 mb-1 uppercase tracking-wide">Multimodal AI Feedback</p>
+                        <p className="text-brand-200 text-sm leading-relaxed">{answer.aiFeedback}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
             );
           })}
