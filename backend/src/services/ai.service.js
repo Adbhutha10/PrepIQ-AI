@@ -3,6 +3,29 @@ const { extractContextViaRAG, buildSemanticChunks, createAndStoreEmbeddings, ret
 const { optimizeQuery } = require('./optimizer.service');
 const SystemPrompt = require('../models/SystemPrompt.model');
 
+const FALLBACK_MODELS = [
+  process.env.GROQ_MODEL,
+  'openai/gpt-oss-120b',
+  'openai/gpt-oss-20b',
+  'qwen/qwen3-32b',
+].filter((m, idx, arr) => m && arr.indexOf(m) === idx);
+
+const callGroqWithFallback = async (options) => {
+  let lastErr;
+  for (const model of FALLBACK_MODELS) {
+    try {
+      return await groq.chat.completions.create({
+        ...options,
+        model,
+      });
+    } catch (err) {
+      lastErr = err;
+      console.warn(`[Groq] Model '${model}' failed: ${err.message}. Trying next fallback model...`);
+    }
+  }
+  throw lastErr || new Error('All candidate Groq models failed.');
+};
+
 const getActivePrompt = async (category, defaultVal) => {
   try {
     const promptDoc = await SystemPrompt.findOne({ category });
@@ -108,8 +131,7 @@ Return structured JSON exactly in this format:
   ]
 }`;
 
-  const response = await groq.chat.completions.create({
-    model: 'openai/gpt-oss-120b',
+  const response = await callGroqWithFallback({
     messages: [
       { role: 'system', content: systemPrompt },
       { role: 'user', content: userPrompt },
@@ -202,8 +224,7 @@ Return valid JSON exactly in this format:
     timePenaltyInstruction
   });
 
-  const response = await groq.chat.completions.create({
-    model: 'openai/gpt-oss-120b',
+  const response = await callGroqWithFallback({
     messages: [{ role: 'user', content: prompt }],
     temperature: 0.4,
     max_tokens: 512,
@@ -246,8 +267,7 @@ Respond with valid JSON exactly in this format:
   const rawTemplate = await getActivePrompt('feedback_report', defaultPrompt);
   const prompt      = formatPrompt(rawTemplate, { jobTitle, summary });
 
-  const response = await groq.chat.completions.create({
-    model: 'openai/gpt-oss-120b',
+  const response = await callGroqWithFallback({
     messages: [{ role: 'user', content: prompt }],
     temperature: 0.5,
     max_tokens: 1024,
@@ -296,8 +316,7 @@ ${resumeText || 'Not provided'}
 JOB_DESCRIPTION:
 ${jdText || 'Not provided'}`;
 
-  const response = await groq.chat.completions.create({
-    model: 'openai/gpt-oss-120b',
+  const response = await callGroqWithFallback({
     messages: [
       { role: 'system', content: systemPrompt },
       { role: 'user', content: userPrompt },
@@ -357,8 +376,7 @@ ${JSON.stringify(parsedJdData, null, 2)}
 Output:
 Numbered list of questions.`;
 
-  const response = await groq.chat.completions.create({
-    model: 'openai/gpt-oss-120b',
+  const response = await callGroqWithFallback({
     messages: [
       { role: 'system', content: systemPrompt },
       { role: 'user', content: userPrompt },
@@ -409,8 +427,7 @@ Return JSON exactly as:
   "improvement_suggestions": []
 }`;
 
-  const response = await groq.chat.completions.create({
-    model: 'openai/gpt-oss-120b',
+  const response = await callGroqWithFallback({
     messages: [
       { role: 'system', content: systemPrompt },
       { role: 'user', content: userPrompt },
@@ -459,8 +476,7 @@ ${answer}
 Output:
 Single follow-up question.`;
 
-  const response = await groq.chat.completions.create({
-    model: 'openai/gpt-oss-120b',
+  const response = await callGroqWithFallback({
     messages: [
       { role: 'system', content: systemPrompt },
       { role: 'user', content: userPrompt },
@@ -506,8 +522,7 @@ Return JSON exactly as:
   ]
 }`;
 
-  const response = await groq.chat.completions.create({
-    model: 'openai/gpt-oss-120b',
+  const response = await callGroqWithFallback({
     messages: [
       { role: 'system', content: systemPrompt },
       { role: 'user', content: userPrompt },
@@ -550,8 +565,7 @@ ${retrievedChunks}
 Response:
 ${modelOutput}`;
 
-  const response = await groq.chat.completions.create({
-    model: 'openai/gpt-oss-120b',
+  const response = await callGroqWithFallback({
     messages: [
       { role: 'system', content: systemPrompt },
       { role: 'user', content: userPrompt },
@@ -618,8 +632,7 @@ Always respond with a valid JSON object containing a "questions" key pointing to
 Job Description:
 ${jobDescription}`;
 
-  const response = await groq.chat.completions.create({
-    model: 'openai/gpt-oss-120b',
+  const response = await callGroqWithFallback({
     messages: [
       { role: 'system', content: systemPrompt },
       { role: 'user', content: userPrompt },

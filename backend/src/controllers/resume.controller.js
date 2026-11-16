@@ -1,3 +1,5 @@
+const fs = require('fs');
+const path = require('path');
 const { PDFParse } = require('pdf-parse');
 const Resume = require('../models/Resume.model');
 const cloudinary = require('../config/cloudinary');
@@ -13,7 +15,11 @@ exports.uploadResume = async (req, res, next) => {
     return next(new AppError('Please upload a file.', 400));
   }
 
-  const { path: fileUrl, originalname, filename, size, mimetype } = req.file;
+  const { originalname, filename, size, mimetype } = req.file;
+  const rawPath = req.file.path || '';
+  const fileUrl = rawPath.startsWith('http://') || rawPath.startsWith('https://')
+    ? rawPath
+    : `/uploads/resumes/${filename}`;
 
   // Extract text from PDF for AI context
   let extractedText = null;
@@ -21,9 +27,14 @@ exports.uploadResume = async (req, res, next) => {
 
   try {
     if (mimetype === 'application/pdf') {
-      const response = await fetch(fileUrl);
-      const arrayBuffer = await response.arrayBuffer();
-      const buffer = Buffer.from(arrayBuffer);
+      let buffer;
+      if (rawPath.startsWith('http://') || rawPath.startsWith('https://')) {
+        const response = await fetch(rawPath);
+        const arrayBuffer = await response.arrayBuffer();
+        buffer = Buffer.from(arrayBuffer);
+      } else {
+        buffer = await fs.promises.readFile(rawPath);
+      }
       const parser = new PDFParse({ data: buffer });
       try {
         const pdfData = await parser.getText();
@@ -33,7 +44,8 @@ exports.uploadResume = async (req, res, next) => {
       }
       parseStatus = 'parsed';
     }
-  } catch {
+  } catch (err) {
+    console.warn('PDF extraction warning:', err.message);
     parseStatus = 'failed';
   }
 
@@ -85,9 +97,16 @@ exports.deleteResume = async (req, res, next) => {
   const resume = await Resume.findOne({ _id: req.params.id, userId: req.user._id });
   if (!resume) return next(new AppError('Resume not found.', 404));
 
-  // Delete from Cloudinary
+  // Delete from Cloudinary or local disk
   try {
-    await cloudinary.uploader.destroy(resume.publicId, { resource_type: 'raw' });
+    if (resume.fileUrl && !resume.fileUrl.startsWith('http')) {
+      const localFilePath = path.join(process.cwd(), resume.fileUrl.replace(/^\//, ''));
+      if (fs.existsSync(localFilePath)) {
+        await fs.promises.unlink(localFilePath);
+      }
+    } else if (resume.publicId) {
+      await cloudinary.uploader.destroy(resume.publicId, { resource_type: 'raw' });
+    }
   } catch {
     // Log but don't fail deletion
   }

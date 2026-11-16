@@ -14,6 +14,7 @@ const helmet     = require('helmet');
 const morgan     = require('morgan');
 const rateLimit  = require('express-rate-limit');
 const compression = require('compression');
+const path       = require('path');
 
 const connectDB      = require('./config/db');
 const errorHandler   = require('./middleware/errorHandler');
@@ -96,6 +97,9 @@ if (process.env.NODE_ENV !== 'test') {
 app.get('/api/health', (_req, res) =>
   res.status(200).json({ success: true, message: 'OK', timestamp: new Date().toISOString() })
 );
+
+// ─── Static Uploads ───────────────────────────────────────────────
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 // ─── API Routes ────────────────────────────────────────────────────
 app.use('/api/auth',       authRoutes);
