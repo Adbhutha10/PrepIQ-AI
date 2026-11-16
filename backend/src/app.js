@@ -93,9 +93,9 @@ if (process.env.NODE_ENV !== 'test') {
   app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 }
 
-// ─── Health Check ──────────────────────────────────────────────────
-app.get('/api/health', (_req, res) =>
-  res.status(200).json({ success: true, message: 'OK', timestamp: new Date().toISOString() })
+// ─── Root & Health Check ───────────────────────────────────────────
+app.get(['/', '/api/health'], (_req, res) =>
+  res.status(200).json({ success: true, message: 'PrepIQ AI Backend API is running', timestamp: new Date().toISOString() })
 );
 
 // ─── Static Uploads ───────────────────────────────────────────────

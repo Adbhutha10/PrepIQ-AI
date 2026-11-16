@@ -11,6 +11,11 @@ let isSyncing = false;
  * Runs the sync pipeline and logs specific metrics.
  */
 const runScheduledSync = async () => {
+  if (!process.env.ADZUNA_APP_ID || !process.env.ADZUNA_APP_KEY) {
+    logger.info('ℹ️ Adzuna credentials not configured. Skipping background job sync.');
+    return;
+  }
+
   if (isSyncing) {
     logger.warn('🔄 Job Sync Scheduler: Previous sync is still running. Skipping...');
     return;

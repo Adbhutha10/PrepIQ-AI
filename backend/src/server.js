@@ -9,8 +9,6 @@
  */
 
 require('dotenv').config({ override: true });
-console.log('SERVER APP ID:', process.env.ADZUNA_APP_ID);
-console.log('SERVER APP KEY:', process.env.ADZUNA_APP_KEY);
 
 const app = require('./app');
 const logger = require('./config/logger');
