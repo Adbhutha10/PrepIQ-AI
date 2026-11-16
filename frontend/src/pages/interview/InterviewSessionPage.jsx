@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { io } from 'socket.io-client';
 import { interviewAPI, sessionAPI } from '@/services/api';
+import { useAuthStore } from '@/store/authStore';
 import toast from 'react-hot-toast';
 
 const DIFFICULTY_CLR = { easy: 'badge-success', medium: 'badge-warning', hard: 'badge-danger' };
@@ -44,7 +45,11 @@ export default function InterviewSessionPage() {
     const rawApiUrl = import.meta.env.VITE_API_URL || '/api';
     const socketUrl = import.meta.env.VITE_SOCKET_URL ||
       (rawApiUrl.startsWith('http') ? rawApiUrl.replace(/\/api\/?$/, '') : window.location.origin);
-    const s = io(socketUrl, { withCredentials: true });
+    const accessToken = useAuthStore.getState().accessToken;
+    const s = io(socketUrl, {
+      withCredentials: true,
+      auth: { token: accessToken },
+    });
     setSocket(s);
     
     s.on("ai_chunk", (chunk) => {

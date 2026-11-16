@@ -3,7 +3,7 @@ const User = require('../models/User.model');
 const AppError = require('../utils/AppError');
 const { sendTokenResponse } = require('../utils/jwt.utils');
 
-const ADMIN_EMAIL = 'admin@interview.com';
+const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || 'admin@interview.com').toLowerCase();
 
 // ─── POST /api/auth/register ───────────────────────────────────────
 exports.register = async (req, res, next) => {
@@ -19,9 +19,12 @@ exports.register = async (req, res, next) => {
     return next(new AppError('An account with this email already exists.', 409));
   }
 
-  // Assign super_admin role automatically for the designated admin email
-  const role = email.toLowerCase() === ADMIN_EMAIL ? 'super_admin' : 'candidate';
-  const user = await User.create({ name, email, password, role });
+  // Prevent unauthorized public registration of designated admin email
+  if (email.toLowerCase() === ADMIN_EMAIL) {
+    return next(new AppError('This email is reserved for system administration. Please sign in via the admin portal.', 403));
+  }
+
+  const user = await User.create({ name, email, password, role: 'candidate' });
   sendTokenResponse(user, 201, res);
 };
 

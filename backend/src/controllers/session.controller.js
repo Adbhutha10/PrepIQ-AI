@@ -92,43 +92,50 @@ exports.completeSession = async (req, res, next) => {
 
   const interview = await Interview.findById(session.interviewId);
 
-  // ── AI Evaluate each answer ────────────────────────────────────
-  const evaluationPromises = session.answers.map(async (answer) => {
-    if (answer.skipped || !answer.answerText) {
-      answer.aiScore = 0;
-      answer.technicalScore = 0;
-      answer.relevanceScore = 0;
-      answer.communicationScore = 0;
-      answer.confidenceScore = 0;
-      answer.aiFeedback = 'Question was skipped.';
-      return;
+  // ── AI Evaluate each answer (in batches to prevent Groq 429 rate limit spikes) ──
+  const BATCH_SIZE = 2;
+  for (let i = 0; i < session.answers.length; i += BATCH_SIZE) {
+    const batch = session.answers.slice(i, i + BATCH_SIZE);
+    await Promise.all(
+      batch.map(async (answer) => {
+        if (answer.skipped || !answer.answerText) {
+          answer.aiScore = 0;
+          answer.technicalScore = 0;
+          answer.relevanceScore = 0;
+          answer.communicationScore = 0;
+          answer.confidenceScore = 0;
+          answer.aiFeedback = 'Question was skipped.';
+          return;
+        }
+        try {
+          const result = await evaluateAnswer({
+            questionText: answer.questionText,
+            answerText: answer.answerText,
+            expectedKeywords: interview.questions.id(answer.questionId)?.expectedKeywords || [],
+            jobTitle: interview.jobTitle,
+          });
+          answer.technicalScore = result.technicalScore ?? 0;
+          answer.relevanceScore = result.relevanceScore ?? 0;
+          answer.communicationScore = result.communicationScore ?? 0;
+          answer.confidenceScore = result.confidenceScore ?? 0;
+          
+          // Calculate a combined score for legacy support or easy sorting
+          answer.aiScore = Math.round((answer.technicalScore + answer.relevanceScore + answer.communicationScore + answer.confidenceScore) / 40);
+          answer.aiFeedback = result.feedback ?? '';
+        } catch {
+          answer.aiScore = 0;
+          answer.technicalScore = 0;
+          answer.relevanceScore = 0;
+          answer.communicationScore = 0;
+          answer.confidenceScore = 0;
+          answer.aiFeedback = 'Evaluation unavailable.';
+        }
+      })
+    );
+    if (i + BATCH_SIZE < session.answers.length) {
+      await new Promise((resolve) => setTimeout(resolve, 200));
     }
-    try {
-      const result = await evaluateAnswer({
-        questionText: answer.questionText,
-        answerText: answer.answerText,
-        expectedKeywords: interview.questions.id(answer.questionId)?.expectedKeywords || [],
-        jobTitle: interview.jobTitle,
-      });
-      answer.technicalScore = result.technicalScore ?? 0;
-      answer.relevanceScore = result.relevanceScore ?? 0;
-      answer.communicationScore = result.communicationScore ?? 0;
-      answer.confidenceScore = result.confidenceScore ?? 0;
-      
-      // Calculate a combined score for legacy support or easy sorting
-      answer.aiScore = Math.round((answer.technicalScore + answer.relevanceScore + answer.communicationScore + answer.confidenceScore) / 40);
-      answer.aiFeedback = result.feedback ?? '';
-    } catch {
-      answer.aiScore = 0;
-      answer.technicalScore = 0;
-      answer.relevanceScore = 0;
-      answer.communicationScore = 0;
-      answer.confidenceScore = 0;
-      answer.aiFeedback = 'Evaluation unavailable.';
-    }
-  });
-
-  await Promise.all(evaluationPromises);
+  }
 
   // ── Generate overall feedback ──────────────────────────────────
   let overallData = {};

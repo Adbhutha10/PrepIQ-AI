@@ -1,5 +1,6 @@
 const Interview = require('../models/Interview.model');
 const Resume = require('../models/Resume.model');
+const User = require('../models/User.model');
 const AppError = require('../utils/AppError');
 const { generateInterviewQuestions } = require('../services/ai.service');
 
@@ -40,6 +41,13 @@ exports.generateQuestions = async (req, res, next) => {
     return next(new AppError('Questions are already being generated.', 400));
   }
 
+  // Credit quota check
+  const currentUser = await User.findById(req.user._id);
+  const isPrivileged = ['admin', 'super_admin'].includes(currentUser?.role) || currentUser?.isPremium;
+  if (!isPrivileged && (currentUser?.credits ?? 0) <= 0) {
+    return next(new AppError('You have used all of your available interview practice credits. Please upgrade to continue.', 402));
+  }
+
   // Fetch resume text if linked
   let resumeText = null;
   if (interview.resumeId) {
@@ -64,6 +72,11 @@ exports.generateQuestions = async (req, res, next) => {
     interview.generationStatus = 'generated';
     interview.status = 'ready';
     await interview.save();
+
+    // Deduct 1 credit upon successful question generation for regular candidates
+    if (!isPrivileged) {
+      await User.findByIdAndUpdate(req.user._id, { $inc: { credits: -1 } });
+    }
 
     res.status(200).json({
       success: true,

@@ -21,6 +21,31 @@ const seedDemoUser = async () => {
   logger.info(`✅ Demo user created: ${DEMO_USER_EMAIL}`);
 };
 
+const seedSuperAdmin = async () => {
+  const adminEmail = (process.env.ADMIN_EMAIL || 'admin@interview.com').toLowerCase();
+  const adminPassword = process.env.ADMIN_PASSWORD || 'Admin@123456';
+
+  const existingAdmin = await User.findOne({ email: adminEmail });
+  if (existingAdmin) {
+    if (existingAdmin.role !== 'super_admin') {
+      existingAdmin.role = 'super_admin';
+      await existingAdmin.save({ validateBeforeSave: false });
+      logger.info(`✅ User promoted to super_admin: ${adminEmail}`);
+    }
+    return;
+  }
+
+  await User.create({
+    name: process.env.ADMIN_NAME || 'Super Administrator',
+    email: adminEmail,
+    password: adminPassword,
+    role: 'super_admin',
+    isPremium: true,
+    credits: 9999,
+  });
+  logger.info(`✅ Super Admin created securely: ${adminEmail}`);
+};
+
 const connectDB = async () => {
   try {
     const conn = await mongoose.connect(process.env.MONGO_URI, {
@@ -28,6 +53,7 @@ const connectDB = async () => {
     });
     logger.info(`✅ MongoDB Connected: ${conn.connection.host}`);
     await seedDemoUser();
+    await seedSuperAdmin();
   } catch (error) {
     logger.error(`❌ MongoDB connection error: ${error.message}`);
     logger.warn('⚠️ Server continuing without MongoDB. Some features will be disabled.');

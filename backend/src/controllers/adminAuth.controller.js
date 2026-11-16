@@ -17,7 +17,7 @@ const AppError = require('../utils/AppError');
 const { generateAccessToken, generateRefreshToken } = require('../utils/jwt.utils');
 const { getRolePermissions } = require('../middleware/rbac');
 
-const ADMIN_EMAIL   = 'admin@interview.com';
+const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || 'admin@interview.com').toLowerCase();
 const ADMIN_ROLES   = ['admin', 'super_admin', 'support', 'content_manager'];
 
 // ─── Shared: build admin token response ───────────────────────────

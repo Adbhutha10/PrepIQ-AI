@@ -1,9 +1,11 @@
 const { Server } = require("socket.io");
 const Groq = require("groq-sdk");
+const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const SystemPrompt = require('./models/SystemPrompt.model');
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+const GROQ_MODEL = process.env.GROQ_MODEL || "openai/gpt-oss-120b";
 
 const initSocket = (httpServer) => {
   const io = new Server(httpServer, {
@@ -14,8 +16,31 @@ const initSocket = (httpServer) => {
     },
   });
 
+  // ─── Socket Authentication Middleware ───────────────────────────
+  io.use((socket, next) => {
+    const token =
+      socket.handshake.auth?.token ||
+      socket.handshake.headers?.authorization?.replace(/^Bearer\s+/, '');
+
+    if (!token) {
+      if (process.env.NODE_ENV === 'development') {
+        return next();
+      }
+      return next(new Error("Authentication required for WebSocket connection."));
+    }
+
+    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+      if (err) {
+        if (process.env.NODE_ENV === 'development') return next();
+        return next(new Error("Invalid WebSocket session token."));
+      }
+      socket.userId = decoded.id;
+      next();
+    });
+  });
+
   io.on("connection", (socket) => {
-    console.log(`[Socket.io] Client connected: ${socket.id}`);
+    console.log(`[Socket.io] Client connected: ${socket.id} (User: ${socket.userId || 'Guest'})`);
 
     // Listen for live interview responses
     socket.on("live_answer", async ({ questionText, answerText, expectedKeywords }) => {
@@ -33,7 +58,7 @@ Expected Keywords: ${expectedKeywords?.join(', ') || 'None'}
 Candidate Answer: ${answerText || '(silence)'}`;
 
         const stream = await groq.chat.completions.create({
-          model: "openai/gpt-oss-120b",
+          model: GROQ_MODEL,
           messages: [{ role: "user", content: prompt }],
           temperature: 0.5,
           max_tokens: 150,
